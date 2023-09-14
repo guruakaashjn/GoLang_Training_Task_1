@@ -9,9 +9,9 @@ func countOccurances(arr []int, arr_len int) {
 	}
 
 	for i := 0; i < arr_len; i++ {
-		if elem_freq[arr[i]] > 0 {
+		if elem_freq[arr[i]] != -1 {
 			fmt.Printf("\n%d occured %d times", arr[i], elem_freq[arr[i]])
-			elem_freq[arr[i]] = 0
+			elem_freq[arr[i]] = -1
 		}
 
 	}
