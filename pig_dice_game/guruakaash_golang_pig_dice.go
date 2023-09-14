@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-	fmt.Println("Hello World!!")
 	var turn_score int
 	turn_score = 0
 	var total_score int
