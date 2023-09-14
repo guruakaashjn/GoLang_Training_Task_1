@@ -6,14 +6,23 @@ package main
 import "fmt"
 
 func main() {
-	var Arr = []int{5, 5, 4, 3, 2}
+	var arr_len int
+
+	fmt.Println("Enter array length: ")
+	fmt.Scan(&arr_len)
+	var Arr = make([]int, arr_len)
+
+	fmt.Println("Enter array elements: ")
+	for i := 0; i < arr_len; i++ {
+		fmt.Scan(&Arr[i])
+	}
+
 	var largest int
 	var second_largest int
 
 	largest = Arr[0]
 	second_largest = -1
 
-	arr_len := len(Arr)
 	for i := 1; i < arr_len; i++ {
 		if Arr[i] > largest {
 			second_largest = largest
