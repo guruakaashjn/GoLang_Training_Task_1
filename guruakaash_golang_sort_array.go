@@ -1,3 +1,6 @@
+//// J N Guru Akaash
+//// GoLang Training Course Practice
+
 package main
 
 import "fmt"
