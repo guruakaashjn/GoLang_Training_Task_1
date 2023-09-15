@@ -1,19 +1,5 @@
-// Create a struct student:
-//properties: id, firstname, lastname, fullname, dateOfBirth, age, CGPA[],
-//grades[], avgCGPA, finalGrade
-
-// CRUD on student
-
-// Get all students
-// Get students by Id
-
-// camelcase for variable names, private properties, private methods eg. camelCase
-// pascal case interfaces and structures, public properties and public methods eg. PascalCase
-// snake case folder name, file name, package name, table names, column names eg.snake_case
-// kabab case kabab-case Project name, Reopsitory Name eg. kebab-case
-// Capitalized snake-case ABCD_EFGH for environment variables eg. CAPITALIZED_SNAKE_CASE
-
-//go env -w GO111MODULE=off
+//// J N Guru Akaash
+//// GoLang Training Course Practice
 
 package main
 
