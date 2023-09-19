@@ -7,16 +7,19 @@ import (
 )
 
 func AdminHandler() (check bool) {
+	// check = false
 	fmt.Println("Enter F_Name : ")
 	var firstName string
 	fmt.Scan(&firstName)
 	defer func() {
 		if a := recover(); a != nil {
 			fmt.Println("Recovered", a)
+			check = false
 		}
-		check = false
+
 	}()
 	check = adminCheck(firstName)
+	// fmt.Println("Check: ", check)
 	return check
 }
 
@@ -38,19 +41,23 @@ func adminCheck(firstName string) bool {
 func AdminPrivilages() {
 
 	for i := 0; i < 1; {
-		fmt.Println("Menu:")
+		// fmt.Println("Length: ", len(guru_user.Users))
+		fmt.Println("\n\nMenu:")
 		fmt.Println("1. Create a User")
 		fmt.Println("2. Read All Users")
 		fmt.Println("3. Update a User")
 		fmt.Println("4. Delete a user")
 		fmt.Println("5. Exit")
 		var choice int
+		fmt.Scan(&choice)
 		switch choice {
 		case 1:
 			var userObj1 *guru_user.User
+			// fmt.Println("1 : ", len(guru_user.Users))
 			userObj1 = getInputFromUser()
 			newUsers := append(guru_user.Users, userObj1)
 			guru_user.Users = newUsers
+			// fmt.Println("2 : ", len(guru_user.Users))
 		case 2:
 			guru_user.ReadAllUsers()
 		case 3:
@@ -72,7 +79,7 @@ func deleteUser() {
 
 	for i := 0; i < len(guru_user.Users); i++ {
 		if guru_user.Users[i].GetUser() == firstName {
-			guru_user.Users[i].DeleteUser(firstName)
+			guru_user.Users[i].DeleteUser()
 		}
 	}
 }
@@ -90,7 +97,7 @@ func updateUser() {
 
 	for i := 0; i < len(guru_user.Users); i++ {
 		if guru_user.Users[i].GetUser() == firstName {
-			guru_user.Users[i].UpdateUser(firstName, fieldName, fieldValue)
+			guru_user.Users[i].UpdateUser(fieldName, fieldValue)
 			break
 		}
 	}

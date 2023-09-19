@@ -41,13 +41,12 @@ func NewUser(f_name, l_name string, isAdmin, isActive bool, contactType string, 
 // CRUD OPERATIONS
 
 func (u *User) ReadUser() {
-	if u.isAdmin {
-		fmt.Println("User First Name: ", u.f_name)
-		fmt.Println("User Last Name: ", u.l_name)
-		fmt.Println("isActive: ", u.isActive)
-		for i := 0; i < len(u.Contacts); i++ {
-			u.Contacts[i].ReadContact()
-		}
+	fmt.Println("User First Name: ", u.f_name)
+	fmt.Println("User Last Name: ", u.l_name)
+	fmt.Println("isAdmin: ", u.isAdmin)
+	fmt.Println("isActive: ", u.isActive)
+	for i := 0; i < len(u.Contacts); i++ {
+		u.Contacts[i].ReadContact()
 	}
 }
 
@@ -55,30 +54,46 @@ func ReadAllUsers() {
 	for i := 0; i < len(Users); i++ {
 		Users[i].ReadUser()
 	}
+	// fmt.Println("")
 }
 
-func (u *User) DeleteUser(firstName string) {
-	if u.isAdmin {
-		for i := 0; i < len(Users); i++ {
-			if Users[i].f_name == firstName {
-				Users[i].isActive = false
-				break
-			}
+func (u *User) DeleteUser() {
+	for i := 0; i < len(u.Contacts); i++ {
+		if u.Contacts[i].GetFirstName() == u.f_name {
+			u.Contacts[i].DeleteContact()
+			break
 		}
 	}
+
+	u.isActive = false
 }
 
-func (u *User) UpdateUser(firstName, updateField, updateValue string) {
-	for i := 0; i < len(Users); i++ {
-		if Users[i].f_name == firstName {
-			switch updateField {
-			case "f_name":
-				u.f_name = updateValue
-			case "L Name":
-				u.l_name = updateValue
-			}
+func (u *User) UpdateUser(updateField, updateValue string) {
+	// for i := 0; i < len(Users); i++ {
+	// 	if Users[i].f_name == firstName {
+	// 		switch updateField {
+	// 		case "f_name":
+	// 			u.f_name = updateValue
+	// 		case "l_name":
+	// 			u.l_name = updateValue
+	// 		}
+	// 	}
+	// }
+
+	for i := 0; i < len(u.Contacts); i++ {
+		if u.Contacts[i].GetFirstName() == u.f_name {
+			u.Contacts[i].UpdateContact(updateField, updateValue)
+			break
 		}
 	}
+
+	switch updateField {
+	case "f_name":
+		u.f_name = updateValue
+	case "l_name":
+		u.l_name = updateValue
+	}
+
 }
 
 func (u *User) CheckIsAdmin() bool {

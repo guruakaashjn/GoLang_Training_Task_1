@@ -41,6 +41,7 @@ func (c *Contact) ReadContact() {
 		for i := 0; i < len(c.Contact_Details); i++ {
 			c.Contact_Details[i].ReadContactDetails()
 		}
+		fmt.Println()
 	}
 }
 
@@ -50,9 +51,9 @@ func (c *Contact) DeleteContact() {
 
 func (c *Contact) UpdateContact(updateField string, updateValue string) {
 	switch updateField {
-	case "F_Name":
+	case "f_name":
 		c.f_name = updateValue
-	case "L_Name":
+	case "l_name":
 		c.l_name = updateValue
 	case "Number", "E-Mail":
 		c.UpdateContactNumberEmail(updateField, updateValue)
@@ -73,6 +74,10 @@ func (c *Contact) UpdateContactNumberEmail(updateField, updateValue string) {
 }
 func (c *Contact) GetFirstName() string {
 	return c.f_name
+}
+
+func (c *Contact) AddContactDetailsToExistingContact() {
+
 }
 
 // func createAndAddRecord

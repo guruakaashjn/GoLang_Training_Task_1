@@ -1,6 +1,7 @@
 package guru_user_handler
 
 import (
+	"contactsoneapp/guru_contact_details"
 	"contactsoneapp/guru_contacts"
 	"contactsoneapp/guru_errors"
 	"contactsoneapp/guru_user"
@@ -14,8 +15,9 @@ func UserHandler() (check bool, firstName string) {
 	defer func() {
 		if a := recover(); a != nil {
 			fmt.Println("Recovered", a)
+			check = false
 		}
-		check = false
+
 	}()
 	check = userCheck(firstName)
 	return check, firstName
@@ -43,9 +45,11 @@ func UserPrivilages(firstName string) {
 		fmt.Println("1. Create a Contact")
 		fmt.Println("2. Read all Contacts")
 		fmt.Println("3. Update a Contact")
-		fmt.Println("4. Delete a Contact")
-		fmt.Println("5. Exit")
+		fmt.Println("4. Add Contact Details to existing Contact")
+		fmt.Println("5. Delete a Contact")
+		fmt.Println("6. Exit")
 		var choice int
+		fmt.Scan(&choice)
 		switch choice {
 		case 1:
 			var contactObj1 *guru_contacts.Contact
@@ -61,10 +65,36 @@ func UserPrivilages(firstName string) {
 		case 3:
 			updateContact(firstName)
 		case 4:
-			deleteContact(firstName)
+			addContactDetailsToExistingContact(firstName)
 		case 5:
+			deleteContact(firstName)
+		case 6:
 			i++
 
+		}
+	}
+}
+
+func addContactDetailsToExistingContact(firstName string) {
+	fmt.Println("Enter contact first name: ")
+	var fName string
+	fmt.Scan(&fName)
+
+	fmt.Println("Enter contact details type name: ")
+	var typeName string
+	fmt.Scan(&typeName)
+	fmt.Println("Enter contact details type value: ")
+	var typeValue string
+	fmt.Scan(&typeValue)
+
+	for i := 0; i < len(guru_user.Users); i++ {
+		if guru_user.Users[i].GetUser() == firstName {
+			for j := 0; j < len(guru_user.Users[i].Contacts); j++ {
+				if guru_user.Users[i].Contacts[j].GetFirstName() == fName {
+					guru_user.Users[i].Contacts[j].Contact_Details = append(guru_user.Users[i].Contacts[j].Contact_Details, guru_contact_details.NewContactDetails(typeName, typeValue))
+					break
+				}
+			}
 		}
 	}
 }
@@ -73,7 +103,7 @@ func deleteContact(firstName string) {
 
 	fmt.Println("Enter Contact First Name to be deleted: ")
 	var fName string
-	fmt.Scan(fName)
+	fmt.Scan(&fName)
 	for i := 0; i < len(guru_user.Users); i++ {
 		if guru_user.Users[i].GetUser() == firstName {
 			for j := 0; j < len(guru_user.Users[i].Contacts); j++ {

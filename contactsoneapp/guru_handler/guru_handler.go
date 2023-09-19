@@ -17,8 +17,10 @@ func MainHandler() {
 		fmt.Scan(&loginChoice)
 		switch loginChoice {
 		case 1:
+			// fmt.Println("Case 1: ", guru_admin_handler.AdminHandler())
 			if guru_admin_handler.AdminHandler() {
 				guru_admin_handler.AdminPrivilages()
+				// fmt.Println("Called: ")
 			}
 		case 2:
 			flag, firstName := guru_user_handler.UserHandler()
