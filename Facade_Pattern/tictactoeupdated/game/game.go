@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"tictactoeupdated/board"
+	"tictactoeupdated/errors"
 	"tictactoeupdated/player"
 )
 
@@ -54,10 +55,30 @@ func (g *Game) Play() {
 	}
 }
 
-func (g *Game) PlayLogic(cellNumber uint) (bool, string) {
+func (g *Game) PlayLogic(cellNumber uint) (flag bool, response string) {
+	// var response string
+	defer func() {
+		if a := recover(); a != nil {
 
+			flag = false
+			response = a.(string)
+			// fmt.Println("Recovered", response)
+
+		}
+	}()
+
+	flag, response = g.PlayLogicInner(cellNumber)
+	if flag {
+		// fmt.Println(response)
+		flag = true
+	}
+	return flag, response
+
+}
+
+func (g *Game) PlayLogicInner(cellNumber uint) (bool, string) {
 	if !g.Board.IsEmpty(cellNumber) {
-		return false, "Cell Not Empty"
+		panic(errors.NewInvalidMove("Cell Not Empty").GetSpecificMessage())
 	}
 	var currentPlayer *player.Player = g.Players[g.turn%2]
 	g.Board.MarkCell(cellNumber, currentPlayer.GetSymbol())
@@ -65,7 +86,5 @@ func (g *Game) PlayLogic(cellNumber uint) (bool, string) {
 		g.isGameEnded = true
 		return true, "Player " + currentPlayer.GetName() + " wins with symbol " + currentPlayer.GetSymbol() + "!!!!"
 	}
-
-	return false, "Next Turn"
-
+	panic(string(errors.NewNextTurn().GetNewNextTurnError()))
 }
