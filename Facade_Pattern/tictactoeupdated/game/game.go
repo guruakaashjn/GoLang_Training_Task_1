@@ -11,6 +11,7 @@ type Game struct {
 	Players     [2]*player.Player
 	board       board.Board
 	turn        uint
+	result      string
 	isGameEnded bool
 }
 
@@ -22,6 +23,7 @@ func NewGame(player0Name, player1Name string) *Game {
 		Players:     players,
 		board:       *board.NewBoard(),
 		turn:        0,
+		result:      "",
 		isGameEnded: false,
 	}
 }
@@ -32,27 +34,32 @@ func (g *Game) Play() {
 
 		g.board.PrintBoard()
 
-		fmt.Printf("Turn %d\n", g.turn)
-		fmt.Println("Enter cell number: ")
-		var cellNumber uint
-		fmt.Scan(&cellNumber)
-		var flag, response = g.PlayLogic(cellNumber)
-		if flag {
-			g.board.PrintBoard()
-			fmt.Println(response)
-			g.isGameEnded = true
+		if g.isGameEnded {
+			fmt.Println(g.result)
 			i++
-			continue
-		}
-		if !flag {
-			if response == "Cell Not Empty" {
+		} else {
+			fmt.Printf("Turn %d\n", g.turn)
+			fmt.Println("Enter cell number: ")
+			var cellNumber uint
+			fmt.Scan(&cellNumber)
+			var flag, response = g.PlayLogic(cellNumber)
+			if flag {
+				g.board.PrintBoard()
 				fmt.Println(response)
-				goto startturn
-			} else {
-				g.turn++
-				fmt.Println(response)
+				g.isGameEnded = true
+				i++
+				continue
 			}
+			if !flag {
+				if response == "Cell Not Empty" {
+					fmt.Println(response)
+					goto startturn
+				} else {
+					g.turn++
+					fmt.Println(response)
+				}
 
+			}
 		}
 
 	}
@@ -87,7 +94,8 @@ func (g *Game) PlayLogicInner(cellNumber uint) (bool, string) {
 	g.board.MarkCell(cellNumber, currentPlayer.GetSymbol())
 	if g.board.CheckWin() {
 		g.isGameEnded = true
-		return true, "Player " + currentPlayer.GetName() + " wins with symbol " + currentPlayer.GetSymbol() + "!!!!"
+		g.result = "Player " + currentPlayer.GetName() + " wins with symbol " + currentPlayer.GetSymbol() + "!!!!"
+		return true, g.result
 	}
 	panic(string(errors.NewNextTurn().GetNewNextTurnError()))
 }
