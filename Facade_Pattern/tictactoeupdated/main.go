@@ -19,5 +19,6 @@ func main() {
 	g1.Play()
 	fmt.Println("Game ended")
 	g1.Play()
+	g1.Play()
 
 }
