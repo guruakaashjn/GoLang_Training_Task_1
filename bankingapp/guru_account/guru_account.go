@@ -2,6 +2,7 @@ package guru_account
 
 import (
 	"bankingapp/guru_errors"
+	"bankingapp/guru_passbook"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -9,17 +10,23 @@ import (
 
 type Account struct {
 	accountNumber uuid.UUID
-	bank          uuid.UUID
+	bankId        uuid.UUID
+	customerId    uuid.UUID
 	isActive      bool
 	balance       int
+	passbook      *guru_passbook.Passbook
 }
 
-func NewAccount(bankId uuid.UUID, balance int) *Account {
+func NewAccount(bankId uuid.UUID, customerId uuid.UUID, balance int) *Account {
+	accountNumber := uuid.New()
+	var newPassbook *guru_passbook.Passbook = guru_passbook.NewPassbook(customerId, accountNumber, balance)
 	return &Account{
-		accountNumber: uuid.New(),
-		bank:          uuid.New(),
+		accountNumber: accountNumber,
+		bankId:        bankId,
+		customerId:    customerId,
 		isActive:      true,
 		balance:       balance,
+		passbook:      newPassbook,
 	}
 }
 func (a *Account) GetAccountNumber() uuid.UUID {
@@ -38,10 +45,11 @@ func (a *Account) SetBalance(balance int) {
 	a.balance = balance
 }
 
-func (a *Account) DepositMoney(money int) {
-	a.balance += money
+func (a *Account) DepositMoney(amount int) {
+	a.balance += amount
+	a.passbook.AddEntry(a.customerId, a.customerId, a.accountNumber, a.accountNumber, amount, "CREDIT")
 }
-func (a *Account) WithdrawMoney(money int) {
+func (a *Account) WithdrawMoney(amount int) {
 
 	defer func() {
 		if a := recover(); a != nil {
@@ -49,14 +57,15 @@ func (a *Account) WithdrawMoney(money int) {
 		}
 	}()
 
-	if a.balance-money >= 0 {
-		a.balance -= money
+	if a.balance-amount >= 0 {
+		a.balance -= amount
+		a.passbook.AddEntry(a.customerId, a.customerId, a.accountNumber, a.accountNumber, amount, "")
 	}
 	panic(guru_errors.NewAccountError(guru_errors.InSufficientBalance).GetSpecificMessage())
 
 }
 
-func (a *Account) TransferMoney(receiver *Account, money int) {
+func (a *Account) TransferMoney(receiver *Account, amount int) {
 
 	defer func() {
 		if a := recover(); a != nil {
@@ -64,14 +73,14 @@ func (a *Account) TransferMoney(receiver *Account, money int) {
 		}
 	}()
 
-	if a.balance-money >= 0 {
-		a.balance -= money
-		receiver.balance += money
+	if a.balance-amount >= 0 {
+		a.balance -= amount
+		receiver.balance += amount
 	}
 	panic(guru_errors.NewAccountError(guru_errors.InSufficientBalance).GetSpecificMessage())
 }
 
-func CreateAccount(bankId uuid.UUID, balance int) *Account {
+func CreateAccount(bankId uuid.UUID, customerId uuid.UUID, balance int) *Account {
 
 	defer func() {
 		if a := recover(); a != nil {
@@ -79,7 +88,7 @@ func CreateAccount(bankId uuid.UUID, balance int) *Account {
 		}
 	}()
 	if balance >= 1000 {
-		return NewAccount(bankId, balance)
+		return NewAccount(bankId, customerId, balance)
 	}
 	panic(guru_errors.NewAccountError(guru_errors.InSufficientBalance).GetSpecificMessage())
 
@@ -94,7 +103,7 @@ func (a *Account) ReadAccount() *Account {
 	if a.isActive {
 		return &Account{
 			accountNumber: a.accountNumber,
-			bank:          a.bank,
+			bankId:        a.bankId,
 			balance:       a.balance,
 		}
 	}
@@ -115,7 +124,7 @@ func (a *Account) UpdateAccount(updateField string, updateValue interface{}) (fl
 		case int:
 			a.SetBalance(updateValue.(int))
 		case uuid.UUID:
-			a.bank = updateValue.(uuid.UUID)
+			a.bankId = updateValue.(uuid.UUID)
 		}
 
 		flag = true

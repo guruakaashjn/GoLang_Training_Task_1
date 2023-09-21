@@ -94,7 +94,7 @@ func (c *Customer) AddAccount(bankId uuid.UUID, balance int) (flag bool, account
 		}
 	}()
 	if c.isActive {
-		accountObject = guru_account.CreateAccount(bankId, balance)
+		accountObject = guru_account.CreateAccount(bankId, c.customerId, balance)
 
 		c.Accounts = append(c.Accounts, accountObject)
 		flag = true
