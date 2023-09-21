@@ -2,7 +2,6 @@ package guru_player
 
 import (
 	"blackjack/guru_card"
-	"fmt"
 	"strconv"
 )
 
@@ -14,18 +13,21 @@ type Player struct {
 
 func NewPlayer(player1Name string) *Player {
 	var cards []*guru_card.Card
-	cards = append(cards, guru_card.NewCard())
+	// cards = append(cards, guru_card.NewCard())
 	return &Player{
 		playerName: player1Name,
 		hold:       false,
 		cards:      cards,
 	}
 }
-func (p *Player) PrintCards() {
-	fmt.Printf("Cards in hand of Player %s : ", p.playerName)
+func (p *Player) PrintCards() (cardsInHand string) {
+	cardsInHand += "Cards in hand of Player " + p.playerName + " : "
+	// fmt.Printf("Cards in hand of Player %s : ", p.playerName)
 	for i := 0; i < len(p.cards); i++ {
-		fmt.Printf(" %s ", p.cards[i].GetCardNumber())
+		cardsInHand += " " + p.cards[i].GetCardNumber() + " "
+		// fmt.Printf(" %s ", p.cards[i].GetCardNumber())
 	}
+	return cardsInHand
 }
 
 func (p *Player) SumOfCards() (sum int) {
