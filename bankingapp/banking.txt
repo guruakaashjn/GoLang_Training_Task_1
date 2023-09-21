@@ -1,0 +1,16 @@
+abbreviation is dependent on user full_name and should be unique
+
+customer CRUD in his accounts
+
+admin CRUD users
+
+admin CRUD banks
+
+bank contains many accounts
+customer contains many accounts
+
+customer can deposit (self), withdraw (self) or transfer money (can be self account or other customer account)
+
+customer total_balance and individual_balance
+
+//// Maintain a passbook for each account
