@@ -49,7 +49,7 @@ const UpdatedAccount string = "account updated"
 const DeletedAccountStatus string = "account is deleted"
 const DeletedAccountAlready string = "account is deleted already"
 const NotExistAccount string = "account doesn't exist"
-const InSufficientBalance string = "account initial balance in-sufficient"
+const InSufficientBalance string = "account balance in-sufficient"
 
 func NewAccountError(specificMessage string) *AccountError {
 	return &AccountError{

@@ -22,6 +22,9 @@ func NewAccount(bankId uuid.UUID, balance int) *Account {
 		balance:       balance,
 	}
 }
+func (a *Account) GetAccountNumber() uuid.UUID {
+	return a.accountNumber
+}
 func (a *Account) GetIsActive() bool {
 	return a.isActive
 }
@@ -33,6 +36,39 @@ func (a *Account) GetBalance() int {
 }
 func (a *Account) SetBalance(balance int) {
 	a.balance = balance
+}
+
+func (a *Account) DepositMoney(money int) {
+	a.balance += money
+}
+func (a *Account) WithdrawMoney(money int) {
+
+	defer func() {
+		if a := recover(); a != nil {
+			fmt.Println(a)
+		}
+	}()
+
+	if a.balance-money >= 0 {
+		a.balance -= money
+	}
+	panic(guru_errors.NewAccountError(guru_errors.InSufficientBalance).GetSpecificMessage())
+
+}
+
+func (a *Account) TransferMoney(receiver *Account, money int) {
+
+	defer func() {
+		if a := recover(); a != nil {
+			fmt.Println(a)
+		}
+	}()
+
+	if a.balance-money >= 0 {
+		a.balance -= money
+		receiver.balance += money
+	}
+	panic(guru_errors.NewAccountError(guru_errors.InSufficientBalance).GetSpecificMessage())
 }
 
 func CreateAccount(bankId uuid.UUID, balance int) *Account {

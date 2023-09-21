@@ -31,6 +31,14 @@ func NewBank(fullName string) *Bank {
 		Accounts:     make([]*guru_account.Account, 0),
 	}
 }
+func (b *Bank) GetNetWorthOfBank() (networth int) {
+
+	for i := 0; i < len(b.Accounts); i++ {
+		networth += b.Accounts[i].GetBalance()
+	}
+
+	return networth
+}
 
 func (b *Bank) GetAbbreviation() string {
 	return b.abbreviation

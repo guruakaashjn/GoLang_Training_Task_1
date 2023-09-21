@@ -32,6 +32,27 @@ func NewCustomer(firstName, lastName string, isAdmin bool) *Customer {
 	}
 }
 
+func (c *Customer) GetTotalBalance() int {
+	return c.totalBalance
+}
+
+func (c *Customer) SetTotalBalance() {
+	for i := 0; i < len(c.Accounts); i++ {
+		c.totalBalance += c.Accounts[i].GetBalance()
+	}
+}
+
+func (c *Customer) GetIndividualAccountBalance() map[uuid.UUID]int {
+	var mapAccountBalance = make(map[uuid.UUID]int)
+
+	for i := 0; i < len(c.Accounts); i++ {
+		mapAccountBalance[c.Accounts[i].GetAccountNumber()] = c.Accounts[i].GetBalance()
+	}
+
+	return mapAccountBalance
+
+}
+
 func (c *Customer) GetCustomerId() uuid.UUID {
 	return c.customerId
 }
@@ -45,6 +66,7 @@ func (c *Customer) GetIsActive() bool {
 func (c *Customer) GetIsAdmin() bool {
 	return c.isAdmin
 }
+
 func (c *Customer) CreateCustomer(firstName, lastName string) (flag bool, customer *Customer) {
 	flag = false
 	defer func() {
