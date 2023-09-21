@@ -2,66 +2,96 @@ package guru_contacts
 
 import (
 	"contactsoneapp/guru_contact_details"
-	"fmt"
+	"strconv"
 
 	"github.com/google/uuid"
 )
 
-var ContactId int = 2
+// var ContactId int = 2
 
 type Contact struct {
-	contact_ID      uuid.UUID
-	f_name          string
-	l_name          string
+	contactId       uuid.UUID
+	firstName       string
+	lastName        string
 	isActive        bool
 	Contact_Details []*guru_contact_details.ContactDetails
 }
 
 func NewContact(firstName, lastName string, isActive bool, contactType, contactValue string) *Contact {
 	ContactDetailsTempList := make([]*guru_contact_details.ContactDetails, 0)
-	contactDetailsTempItem := guru_contact_details.NewContactDetails(contactType, contactValue)
+	// contactDetailsTempItem := guru_contact_details.NewContactDetails(contactType, contactValue)
 	var newObjectOfContact = &Contact{
-		contact_ID:      uuid.New(),
-		f_name:          firstName,
-		l_name:          lastName,
-		isActive:        isActive,
-		Contact_Details: append(ContactDetailsTempList, contactDetailsTempItem),
+		contactId: uuid.New(),
+		firstName: firstName,
+		lastName:  lastName,
+		isActive:  isActive,
+		// Contact_Details: append(ContactDetailsTempList, contactDetailsTempItem),
+		Contact_Details: ContactDetailsTempList,
 	}
 
 	return newObjectOfContact
 
 }
 
-func (c *Contact) ReadContact() {
-	if c.isActive {
-		fmt.Println("Contact Info")
-		fmt.Printf("First Name: %s", c.f_name)
-		fmt.Printf("\nLast Name: %s", c.l_name)
-		fmt.Printf("\nisActive: %s", "True")
-		for i := 0; i < len(c.Contact_Details); i++ {
-			c.Contact_Details[i].ReadContactDetails()
-		}
-		fmt.Println()
+func CreateContact(firstName, lastName string, contactType, contactValue string) *Contact {
+	return NewContact(firstName, lastName, true, contactType, contactValue)
+
+}
+
+// func (c *Contact) ReadContact() {
+// 	if c.isActive {
+// 		fmt.Println("Contact Info")
+// 		fmt.Printf("First Name: %s", c.firstName)
+// 		fmt.Printf("\nLast Name: %s", c.lastName)
+// 		fmt.Printf("\nisActive: %s", "True")
+// 		for i := 0; i < len(c.Contact_Details); i++ {
+// 			c.Contact_Details[i].ReadContactDetails()
+// 		}
+// 		fmt.Println()
+// 	}
+// }
+
+func (c *Contact) GetContactId() uuid.UUID {
+	return c.contactId
+}
+
+func (c *Contact) ReadContact() (readContact string) {
+	readContact += "Contact Info" +
+		"\n Contact Id: " + c.contactId.String() +
+		"\nFirst Name : " + c.firstName +
+		"\nLast Name : " + c.lastName +
+		"\nisActive : " + strconv.FormatBool(c.isActive)
+	for i := 0; i < len(c.Contact_Details); i++ {
+		readContact += c.Contact_Details[i].ReadContactDetails()
+		readContact += "\n"
+
 	}
+
+	return readContact
+
 }
 
 func (c *Contact) DeleteContact() {
+	for i := 0; i < len(c.Contact_Details); i++ {
+		c.Contact_Details[i].DeleteContactDetails()
+	}
+
 	c.isActive = false
 }
 
 func (c *Contact) UpdateContact(updateField string, updateValue string) {
 	switch updateField {
-	case "f_name":
-		c.f_name = updateValue
-	case "l_name":
-		c.l_name = updateValue
+	case "firstName":
+		c.firstName = updateValue
+	case "lastName":
+		c.lastName = updateValue
 	case "Number", "E-Mail":
-		c.UpdateContactNumberEmail(updateField, updateValue)
+		c.updateContactNumberEmail(updateField, updateValue)
 	}
 
 }
 
-func (c *Contact) UpdateContactNumberEmail(updateField, updateValue string) {
+func (c *Contact) updateContactNumberEmail(updateField, updateValue string) {
 	for i := 0; i < len(c.Contact_Details); i++ {
 		if c.Contact_Details[i].GetType() == updateField {
 			c.Contact_Details[i].UpdateContactDetails(updateField, updateValue)
@@ -73,7 +103,7 @@ func (c *Contact) UpdateContactNumberEmail(updateField, updateValue string) {
 	}
 }
 func (c *Contact) GetFirstName() string {
-	return c.f_name
+	return c.firstName
 }
 
 func (c *Contact) AddContactDetailsToExistingContact() {
