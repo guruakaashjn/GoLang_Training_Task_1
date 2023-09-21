@@ -1,13 +1,12 @@
 package main
 
 import (
-	"contactsoneapp/guru_handler"
 	"fmt"
 )
 
 func main() {
 	fmt.Println("Main Called....")
-	guru_handler.MainHandler()
+	// guru_handler.MainHandler()
 
 	// fmt.Println(guru_user.UserId)
 	// fmt.Println(guru_contacts.ContactId)
