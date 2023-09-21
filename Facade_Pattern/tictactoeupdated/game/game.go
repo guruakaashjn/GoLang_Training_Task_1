@@ -73,11 +73,11 @@ func (g *Game) SetTurn() {
 // 	}
 // }
 
-func (g *Game) PlayLogic(cellNumber uint) (flag bool, response string) {
+func (g *Game) PlayLogic(cellNumber uint) (flag bool, response string, boardMarks string) {
 
 	// var response string
 	defer func() {
-		g.board.PrintBoard()
+		boardMarks = g.board.PrintBoard()
 		if a := recover(); a != nil {
 
 			flag = false
@@ -97,7 +97,7 @@ func (g *Game) PlayLogic(cellNumber uint) (flag bool, response string) {
 		flag, response = g.PlayLogicInner(cellNumber)
 	}
 
-	return flag, response
+	return flag, response, boardMarks
 
 }
 
@@ -110,6 +110,11 @@ func (g *Game) PlayLogicInner(cellNumber uint) (bool, string) {
 	}
 	var currentPlayer *player.Player = g.Players[g.turn%2]
 	g.board.MarkCell(cellNumber, currentPlayer.GetSymbol())
+	if g.board.CheckDraw() {
+		g.isGameEnded = true
+		g.result = "The Game ended with a Draw!!!!"
+		return true, g.result
+	}
 	if g.board.CheckWin() {
 		g.isGameEnded = true
 		g.result = "Player " + currentPlayer.GetName() + " wins with symbol " + currentPlayer.GetSymbol() + "!!!!"

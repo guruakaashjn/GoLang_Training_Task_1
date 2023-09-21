@@ -1,7 +1,6 @@
 package board
 
 import (
-	"fmt"
 	"tictactoeupdated/cell"
 )
 
@@ -31,16 +30,19 @@ func (b *Board) MarkCell(cellNumber uint, symbol string) {
 	b.Cells[cellNumber].MarkCell(symbol)
 }
 
-func (b *Board) PrintBoard() {
+func (b *Board) PrintBoard() (boardMarks string) {
 	for i := 0; i < 9; i++ {
 		if i%3 == 0 {
-			fmt.Println()
+			boardMarks += "\n"
 		}
+		boardMarks += "  " + string(b.Cells[i].GetMark()) + "  "
 		// fmt.Sprintf(" %s ", (*b.Cells[i]).GetMark())
-		fmt.Print("  ", (*b.Cells[i]).GetMark(), "  ")
+		// fmt.Print("  ", (*b.Cells[i]).GetMark(), "  ")
 
 	}
-	fmt.Println()
+	// fmt.Println()
+
+	return boardMarks
 }
 
 // 0 1 2
@@ -80,4 +82,15 @@ func (b *Board) CheckWin() bool {
 
 	}
 	return false
+}
+
+func (b *Board) CheckDraw() (flag bool) {
+	flag = true
+	for i := 0; i < len(b.Cells); i++ {
+		if b.Cells[i].IsEmpty() {
+			flag = false
+			break
+		}
+	}
+	return flag
 }

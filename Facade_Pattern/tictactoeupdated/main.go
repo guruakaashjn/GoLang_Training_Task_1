@@ -28,14 +28,16 @@ func main() {
 		fmt.Printf("Enter cell number: ")
 		var cellNumber uint
 		fmt.Scan(&cellNumber)
-		var flag, response = g1.PlayLogic(cellNumber)
+		var flag, response, boardMarks = g1.PlayLogic(cellNumber)
+		fmt.Println(boardMarks)
 		if flag {
 			i++
 		}
 		fmt.Println(response)
 	}
 
-	var flag, response = g1.PlayLogic(1)
+	var flag, response, boardMarks = g1.PlayLogic(1)
 	fmt.Println("F : ", flag)
 	fmt.Println("Response: ", response)
+	fmt.Println(boardMarks)
 }
