@@ -2,7 +2,6 @@ package guru_contacts
 
 import (
 	"contactsoneapp/guru_contact_details"
-	"strconv"
 
 	"github.com/google/uuid"
 )
@@ -55,19 +54,25 @@ func (c *Contact) GetContactId() uuid.UUID {
 	return c.contactId
 }
 
-func (c *Contact) ReadContact() (readContact string) {
-	readContact += "Contact Info" +
-		"\n Contact Id: " + c.contactId.String() +
-		"\nFirst Name : " + c.firstName +
-		"\nLast Name : " + c.lastName +
-		"\nisActive : " + strconv.FormatBool(c.isActive)
-	for i := 0; i < len(c.Contact_Details); i++ {
-		readContact += c.Contact_Details[i].ReadContactDetails()
-		readContact += "\n"
+// func (c *Contact) ReadContact() (readContact string) {
+// 	readContact += "Contact Info" +
+// 		"\n Contact Id: " + c.contactId.String() +
+// 		"\nFirst Name : " + c.firstName +
+// 		"\nLast Name : " + c.lastName +
+// 		"\nisActive : " + strconv.FormatBool(c.isActive)
+// 	for i := 0; i < len(c.Contact_Details); i++ {
+// 		readContact += c.Contact_Details[i].ReadContactDetails()
+// 		readContact += "\n"
 
-	}
+// 	}
 
-	return readContact
+// 	return readContact
+
+// }
+
+func (c *Contact) ReadContact() *Contact {
+
+	return c
 
 }
 

@@ -1,8 +1,6 @@
 package guru_contact_details
 
 import (
-	"strconv"
-
 	"github.com/google/uuid"
 )
 
@@ -41,13 +39,17 @@ func (cd *ContactDetails) UpdateContactDetails(keyName string, keyValue string) 
 // 	fmt.Printf("\nType : %s and Type Value : %s", cd.typeName, cd.typeValue)
 // }
 
-func (cd *ContactDetails) ReadContactDetails() (readContactDetails string) {
-	readContactDetails += "Contact Details" +
-		"\nContact Details Id: " + cd.contactDetailsId.String() +
-		"\nType : " + cd.typeName +
-		" and Type Value : " + cd.typeValue +
-		"\nisActive : " + strconv.FormatBool(cd.isActive)
-	return readContactDetails
+// func (cd *ContactDetails) ReadContactDetails() (readContactDetails string) {
+// 	readContactDetails += "Contact Details" +
+// 		"\nContact Details Id: " + cd.contactDetailsId.String() +
+// 		"\nType : " + cd.typeName +
+// 		" and Type Value : " + cd.typeValue +
+// 		"\nisActive : " + strconv.FormatBool(cd.isActive)
+// 	return readContactDetails
+// }
+
+func (cd *ContactDetails) ReadContactDetails() *ContactDetails {
+	return cd
 }
 
 func (cd *ContactDetails) DeleteContactDetails() {
