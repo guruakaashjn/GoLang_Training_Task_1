@@ -93,9 +93,9 @@ func (g *Game) PlayLogic(cellNumber uint) (flag bool, response string, boardMark
 	if g.isGameEnded {
 		flag = true
 		response = g.result
-	} else {
-		flag, response = g.PlayLogicInner(cellNumber)
+		return flag, response, boardMarks
 	}
+	flag, response = g.PlayLogicInner(cellNumber)
 
 	return flag, response, boardMarks
 
