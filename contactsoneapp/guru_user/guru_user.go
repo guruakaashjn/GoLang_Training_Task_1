@@ -45,7 +45,9 @@ func NewUser(firstName, lastName string, isAdmin bool) *User {
 // ADMIN CRUD OPERATIONS ON USERS
 // ADMIN
 func CreateAdmin(firstName, lastName string) *User {
-	return NewUser(firstName, lastName, true)
+	var newAdmin *User = NewUser(firstName, lastName, true)
+	Users = append(Users, newAdmin)
+	return newAdmin
 
 }
 
@@ -57,7 +59,9 @@ func (u *User) CreateUser(firstName, lastName string) *User {
 	}()
 
 	if u.isAdmin && u.isActive {
-		return NewUser(firstName, lastName, false)
+		var newUser *User = NewUser(firstName, lastName, false)
+		Users = append(Users, newUser)
+		return newUser
 	}
 	if u.isAdmin && !u.isActive {
 		panic(guru_errors.NewInvalidUserError(guru_errors.AdminDeleted).GetSpecificMessage())
