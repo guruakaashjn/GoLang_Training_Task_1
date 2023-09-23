@@ -28,10 +28,10 @@ func CreateContactDetails(typeName, typeValue string) *ContactDetails {
 	return NewContactDetails(typeName, typeValue)
 }
 
-func (cd *ContactDetails) UpdateContactDetails(keyName string, keyValue string) bool {
+func (cd *ContactDetails) UpdateContactDetails(keyName string, keyValue string) *ContactDetails {
 	cd.typeName = keyName
 	cd.typeValue = keyValue
-	return true
+	return cd
 }
 
 // func (cd *ContactDetails) ReadContactDetails() {
@@ -48,14 +48,18 @@ func (cd *ContactDetails) UpdateContactDetails(keyName string, keyValue string) 
 // 	return readContactDetails
 // }
 
-func (cd *ContactDetails) ReadContactDetails() *ContactDetails {
-	return cd
+func (cd *ContactDetails) ReadContactDetails() (bool, *ContactDetails) {
+	if cd.isActive {
+		return true, cd
+	}
+	return false, cd
 }
 
-func (cd *ContactDetails) DeleteContactDetails() {
+func (cd *ContactDetails) DeleteContactDetails() *ContactDetails {
 	cd.typeName = ""
 	cd.typeValue = ""
 	cd.isActive = false
+	return cd
 }
 
 func (cd *ContactDetails) GetType() string {

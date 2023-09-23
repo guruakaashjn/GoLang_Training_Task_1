@@ -16,7 +16,7 @@ type Contact struct {
 	Contact_Details []*guru_contact_details.ContactDetails
 }
 
-func NewContact(firstName, lastName string, isActive bool, contactType, contactValue string) *Contact {
+func NewContact(firstName, lastName string, isActive bool) *Contact {
 	ContactDetailsTempList := make([]*guru_contact_details.ContactDetails, 0)
 	// contactDetailsTempItem := guru_contact_details.NewContactDetails(contactType, contactValue)
 	var newObjectOfContact = &Contact{
@@ -32,8 +32,8 @@ func NewContact(firstName, lastName string, isActive bool, contactType, contactV
 
 }
 
-func CreateContact(firstName, lastName string, contactType, contactValue string) *Contact {
-	return NewContact(firstName, lastName, true, contactType, contactValue)
+func CreateContact(firstName, lastName string) *Contact {
+	return NewContact(firstName, lastName, true)
 
 }
 
@@ -70,21 +70,26 @@ func (c *Contact) GetContactId() uuid.UUID {
 
 // }
 
-func (c *Contact) ReadContact() *Contact {
+func (c *Contact) ReadContact() (bool, *Contact) {
+	if c.isActive {
+		return true, c
+	}
 
-	return c
+	return false, c
 
 }
 
-func (c *Contact) DeleteContact() {
+func (c *Contact) DeleteContact() *Contact {
 	for i := 0; i < len(c.Contact_Details); i++ {
 		c.Contact_Details[i].DeleteContactDetails()
 	}
 
 	c.isActive = false
+
+	return c
 }
 
-func (c *Contact) UpdateContact(updateField string, updateValue string) {
+func (c *Contact) UpdateContact(updateField string, updateValue string) *Contact {
 	switch updateField {
 	case "firstName":
 		c.firstName = updateValue
@@ -93,6 +98,8 @@ func (c *Contact) UpdateContact(updateField string, updateValue string) {
 	case "Number", "E-Mail":
 		c.updateContactNumberEmail(updateField, updateValue)
 	}
+
+	return c
 
 }
 
@@ -110,9 +117,6 @@ func (c *Contact) updateContactNumberEmail(updateField, updateValue string) {
 func (c *Contact) GetFirstName() string {
 	return c.firstName
 }
-
-func (c *Contact) AddContactDetailsToExistingContact() {
-
+func (c *Contact) GetIsActive() bool {
+	return c.isActive
 }
-
-// func createAndAddRecord

@@ -24,8 +24,9 @@ var Users = make([]*User, 0)
 
 func NewUser(firstName, lastName string, isAdmin bool) *User {
 
-	var ContactsTempList = make([]*guru_contacts.Contact, 0)
-	// var ContactsTempItem = guru_contacts.NewContact(firstName, lastName, isActive, contactType, contactValue)
+	var ContactsTempList []*guru_contacts.Contact = make([]*guru_contacts.Contact, 0)
+	// var ContactsTempItem = guru_contacts.NewContact(firstName, lastName, true, contactType, contactValue)
+
 	var newObjectOfUser = &User{
 		userId:    uuid.New(),
 		firstName: firstName,
@@ -44,27 +45,34 @@ func NewUser(firstName, lastName string, isAdmin bool) *User {
 
 // ADMIN CRUD OPERATIONS ON USERS
 // ADMIN
-func CreateAdmin(firstName, lastName string) *User {
+func CreateAdmin(firstName, lastName string) (adminUser *User) {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
 
-	return NewUser(firstName, lastName, true)
+	adminUser = NewUser(firstName, lastName, true)
+	panic(guru_errors.NewUserError(guru_errors.AdminCreated).GetSpecificMessage())
 
 }
 
-func (u *User) CreateUser(firstName, lastName string) *User {
+func (u *User) CreateUser(firstName, lastName string) (newUser *User) {
 	defer func() {
 		if a := recover(); a != nil {
 			fmt.Println(a)
 		}
 	}()
-
-	if u.isAdmin && u.isActive {
-
-		return NewUser(firstName, lastName, false)
+	if !u.isAdmin {
+		panic(guru_errors.NewUserError(guru_errors.NotAnAdminError).GetSpecificMessage())
 	}
-	if u.isAdmin && !u.isActive {
-		panic(guru_errors.NewInvalidUserError(guru_errors.AdminDeleted).GetSpecificMessage())
+	if !u.isActive {
+		panic(guru_errors.NewUserError(guru_errors.AdminDeleted).GetSpecificMessage())
 	}
-	panic(guru_errors.NewInvalidUserError(guru_errors.NotAnAdminError).GetSpecificMessage())
+
+	newUser = NewUser(firstName, lastName, false)
+	panic(guru_errors.NewUserError(guru_errors.UserCreated).GetSpecificMessage())
+
 }
 
 // func (u *User) readUser() (userInfo string) {
@@ -88,7 +96,7 @@ func (u *User) CreateUser(firstName, lastName string) *User {
 // 		return userInfo
 // 	}
 
-// 	panic(guru_errors.NewInvalidUserError(guru_errors.UserDeleted).GetSpecificMessage())
+// 	panic(guru_errors.NewUserError(guru_errors.UserDeleted).GetSpecificMessage())
 // }
 
 // func (u *User) ReadUserById(userIdTemp uuid.UUID) (userInfo string) {
@@ -114,9 +122,9 @@ func (u *User) CreateUser(firstName, lastName string) *User {
 // 		return userInfo
 // 	}
 // 	if u.isAdmin && !u.isActive {
-// 		panic(guru_errors.NewInvalidUserError(guru_errors.AdminDeleted).GetSpecificMessage())
+// 		panic(guru_errors.NewUserError(guru_errors.AdminDeleted).GetSpecificMessage())
 // 	}
-// 	panic(guru_errors.NewInvalidUserError(guru_errors.NotAnAdminError).GetSpecificMessage())
+// 	panic(guru_errors.NewUserError(guru_errors.NotAnAdminError).GetSpecificMessage())
 // }
 
 // func (u *User) ReadAllUsers() (allUserInfo string) {
@@ -135,25 +143,10 @@ func (u *User) CreateUser(firstName, lastName string) *User {
 
 // 	}
 // 	if u.isAdmin && !u.isActive {
-// 		panic(guru_errors.NewInvalidUserError(guru_errors.AdminDeleted).GetSpecificMessage())
+// 		panic(guru_errors.NewUserError(guru_errors.AdminDeleted).GetSpecificMessage())
 // 	}
-// 	panic(guru_errors.NewInvalidUserError(guru_errors.NotAnAdminError).GetSpecificMessage())
+// 	panic(guru_errors.NewUserError(guru_errors.NotAnAdminError).GetSpecificMessage())
 // }
-
-func (u *User) readUser() *User {
-	defer func() {
-		if a := recover(); a != nil {
-			fmt.Println(a)
-		}
-	}()
-
-	if u.isActive {
-
-		return u
-	}
-
-	panic(guru_errors.NewInvalidUserError(guru_errors.UserDeleted).GetSpecificMessage())
-}
 
 func (u *User) ReadUserById(userIdTemp uuid.UUID) (userInfo *User) {
 	defer func() {
@@ -162,14 +155,28 @@ func (u *User) ReadUserById(userIdTemp uuid.UUID) (userInfo *User) {
 		}
 	}()
 
-	if u.isAdmin && u.isActive {
-		var requiredUser *User = GetRequiredUserObjectById(userIdTemp)
-		return requiredUser
+	if !u.isAdmin {
+		panic(guru_errors.NewUserError(guru_errors.NotAnAdminError).GetSpecificMessage())
+
 	}
-	if u.isAdmin && !u.isActive {
-		panic(guru_errors.NewInvalidUserError(guru_errors.AdminDeleted).GetSpecificMessage())
+	if !u.isActive {
+		panic(guru_errors.NewUserError(guru_errors.AdminDeleted).GetSpecificMessage())
 	}
-	panic(guru_errors.NewInvalidUserError(guru_errors.NotAnAdminError).GetSpecificMessage())
+
+	var requiredUser *User
+	for i := 0; i < len(Users); i++ {
+		if Users[i].userId == userIdTemp {
+			requiredUser = Users[i]
+			break
+		}
+	}
+	if !requiredUser.isActive {
+		panic(guru_errors.NewUserError(guru_errors.UserDeletedStatus).GetSpecificMessage())
+
+	}
+	userInfo = requiredUser
+	panic(guru_errors.NewUserError(guru_errors.UserRead).GetSpecificMessage())
+
 }
 
 func (u *User) ReadAllUsers() (allUserInfo []*User) {
@@ -179,22 +186,26 @@ func (u *User) ReadAllUsers() (allUserInfo []*User) {
 			fmt.Println(a)
 		}
 	}()
+	if !u.isAdmin {
+		panic(guru_errors.NewUserError(guru_errors.NotAnAdminError).GetSpecificMessage())
 
-	if u.isAdmin && u.isActive {
-		for i := 0; i < len(Users); i++ {
-			allUserInfo = append(allUserInfo, Users[i].readUser())
+	}
 
+	if !u.isActive {
+		panic(guru_errors.NewUserError(guru_errors.AdminDeleted).GetSpecificMessage())
+	}
+
+	for i := 0; i < len(Users); i++ {
+		if Users[i].isActive {
+			allUserInfo = append(allUserInfo, Users[i])
 		}
-		return allUserInfo
 
 	}
-	if u.isAdmin && !u.isActive {
-		panic(guru_errors.NewInvalidUserError(guru_errors.AdminDeleted).GetSpecificMessage())
-	}
-	panic(guru_errors.NewInvalidUserError(guru_errors.NotAnAdminError).GetSpecificMessage())
+	panic(guru_errors.NewUserError(guru_errors.UserReadAll).GetSpecificMessage())
+
 }
 
-func (u *User) DeleteUser(userIdTemp uuid.UUID) {
+func (u *User) DeleteUser(userIdTemp uuid.UUID) (deletedUser *User) {
 	// userIdUuid := uuid.Must(uuid.FromBytes([]byte(userId)))
 
 	defer func() {
@@ -202,34 +213,30 @@ func (u *User) DeleteUser(userIdTemp uuid.UUID) {
 			fmt.Println(a)
 		}
 	}()
-
-	if u.isAdmin && u.isActive {
-		var requiredUser *User = GetRequiredUserObjectById(userIdTemp)
-
-		for i := 0; i < len(requiredUser.Contacts); i++ {
-			requiredUser.Contacts[i].DeleteContact()
-		}
-
-		u.isActive = false
+	if !u.isAdmin {
+		panic(guru_errors.NewUserError(guru_errors.NotAnAdminError).GetSpecificMessage())
 	}
-	if u.isAdmin && !u.isActive {
-		panic(guru_errors.NewInvalidUserError(guru_errors.AdminDeleted).GetSpecificMessage())
+	if !u.isActive {
+		panic(guru_errors.NewUserError(guru_errors.AdminDeleted).GetSpecificMessage())
 	}
-	panic(guru_errors.NewInvalidUserError(guru_errors.NotAnAdminError).GetSpecificMessage())
+
+	requiredUser := u.ReadUserById(userIdTemp)
+	if requiredUser == nil {
+		panic(guru_errors.NewUserError(guru_errors.UserDeletedStatus).GetSpecificMessage())
+
+	}
+
+	for i := 0; i < len(requiredUser.Contacts); i++ {
+		requiredUser.Contacts[i].DeleteContact()
+	}
+
+	requiredUser.isActive = false
+	deletedUser = requiredUser
+	panic(guru_errors.NewUserError(guru_errors.UserDeleted).GetSpecificMessage())
 
 }
 
-func (u *User) UpdateUser(userIdTemp uuid.UUID, updateField, updateValue string) {
-	// for i := 0; i < len(Users); i++ {
-	// 	if Users[i].firstName == firstName {
-	// 		switch updateField {
-	// 		case "firstName":
-	// 			u.firstName = updateValue
-	// 		case "lastName":
-	// 			u.lastName = updateValue
-	// 		}
-	// 	}
-	// }
+func (u *User) UpdateUser(userIdTemp uuid.UUID, updateField, updateValue string) (updatedUser *User) {
 
 	defer func() {
 		if a := recover(); a != nil {
@@ -237,27 +244,33 @@ func (u *User) UpdateUser(userIdTemp uuid.UUID, updateField, updateValue string)
 		}
 	}()
 
-	if u.isAdmin && u.isActive {
-		var requiredUser *User = GetRequiredUserObjectById(userIdTemp)
-
-		for i := 0; i < len(requiredUser.Contacts); i++ {
-			if requiredUser.Contacts[i].GetContactId() == requiredUser.userId {
-				requiredUser.Contacts[i].UpdateContact(updateField, updateValue)
-				break
-			}
-		}
-
-		switch updateField {
-		case "firstName":
-			requiredUser.firstName = updateValue
-		case "lastName":
-			requiredUser.lastName = updateValue
-		}
+	if !u.isAdmin {
+		panic(guru_errors.NewUserError(guru_errors.NotAnAdminError).GetSpecificMessage())
 	}
-	if u.isAdmin && !u.isActive {
-		panic(guru_errors.NewInvalidUserError(guru_errors.AdminDeleted).GetSpecificMessage())
+	if !u.isActive {
+		panic(guru_errors.NewUserError(guru_errors.AdminDeleted).GetSpecificMessage())
 	}
-	panic(guru_errors.NewInvalidUserError(guru_errors.NotAnAdminError).GetSpecificMessage())
+
+	requiredUser := u.ReadUserById(userIdTemp)
+	if requiredUser == nil {
+		panic(guru_errors.NewUserError(guru_errors.UserDeletedStatus).GetSpecificMessage())
+	}
+
+	// for i := 0; i < len(requiredUser.Contacts); i++ {
+	// 	if requiredUser.Contacts[i].GetContactId() == requiredUser.userId {
+	// 		requiredUser.Contacts[i].UpdateContact(updateField, updateValue)
+	// 		break
+	// 	}
+	// }
+
+	switch updateField {
+	case "firstName":
+		requiredUser.firstName = updateValue
+	case "lastName":
+		requiredUser.lastName = updateValue
+	}
+	updatedUser = requiredUser
+	panic(guru_errors.NewUserError(guru_errors.UserUpdated).GetSpecificMessage())
 
 }
 
@@ -269,34 +282,23 @@ func (u *User) GetUser() string {
 	return u.firstName
 }
 
-func GetRequiredUserObjectById(userIdTemp uuid.UUID) *User {
-	var requiredUser *User
-	for i := 0; i < len(Users); i++ {
-		if Users[i].userId == userIdTemp {
-			requiredUser = Users[i]
-			break
-		}
-	}
-
-	return requiredUser
-}
-
 // USER CRUD OPERATIONS ON CONTACTS
 // USER
-func (u *User) CreateContact(firstName, lastName string, contactType, contactValue string) {
+func (u *User) CreateContact(firstName, lastName string) (newContact *guru_contacts.Contact) {
 
 	defer func() {
 		if a := recover(); a != nil {
 			fmt.Println(a)
 		}
 	}()
-	if u.isActive {
-		u.Contacts = append(u.Contacts, guru_contacts.CreateContact(firstName, lastName, contactType, contactValue))
-		panic(guru_errors.NewContactError(guru_errors.ContactCreated).GetSpecificMessage())
+	if !u.isActive {
+		panic(guru_errors.NewUserError(guru_errors.UserDeleted).GetSpecificMessage())
 
 	}
+	newContact = guru_contacts.CreateContact(firstName, lastName)
+	u.Contacts = append(u.Contacts, newContact)
+	panic(guru_errors.NewContactError(guru_errors.ContactCreated).GetSpecificMessage())
 
-	panic(guru_errors.NewInvalidUserError(guru_errors.UserDeleted).GetSpecificMessage())
 }
 
 // func (u *User) ReadContactById(contactIdTemp uuid.UUID) (contactInfo string) {
@@ -311,7 +313,7 @@ func (u *User) CreateContact(firstName, lastName string, contactType, contactVal
 // 		panic(guru_errors.NewContactError(guru_errors.ContactRead).GetSpecificMessage())
 
 // 	}
-// 	panic(guru_errors.NewInvalidUserError(guru_errors.UserDeleted).GetSpecificMessage())
+// 	panic(guru_errors.NewUserError(guru_errors.UserDeleted).GetSpecificMessage())
 
 // }
 // func (u *User) ReadAllContact() (allContactInfo string) {
@@ -328,7 +330,7 @@ func (u *User) CreateContact(firstName, lastName string, contactType, contactVal
 // 		panic(guru_errors.NewContactError(guru_errors.ContactReadAll).GetSpecificMessage())
 
 // 	}
-// 	panic(guru_errors.NewInvalidUserError(guru_errors.UserDeleted).GetSpecificMessage())
+// 	panic(guru_errors.NewUserError(guru_errors.UserDeleted).GetSpecificMessage())
 // }
 
 func (u *User) ReadContactById(contactIdTemp uuid.UUID) (contactInfo *guru_contacts.Contact) {
@@ -337,13 +339,25 @@ func (u *User) ReadContactById(contactIdTemp uuid.UUID) (contactInfo *guru_conta
 			fmt.Println(a)
 		}
 	}()
-	if u.isActive {
-		var requiredContact *guru_contacts.Contact = u.GetRequiredContactObjectById(contactIdTemp)
-		contactInfo = requiredContact
-		panic(guru_errors.NewContactError(guru_errors.ContactRead).GetSpecificMessage())
+	if !u.isActive {
+		panic(guru_errors.NewUserError(guru_errors.UserDeleted).GetSpecificMessage())
 
 	}
-	panic(guru_errors.NewInvalidUserError(guru_errors.UserDeleted).GetSpecificMessage())
+	var requiredContact *guru_contacts.Contact
+
+	for i := 0; i < len(u.Contacts); i++ {
+		if u.Contacts[i].GetContactId() == contactIdTemp {
+			requiredContact = u.Contacts[i]
+			break
+		}
+	}
+
+	if !requiredContact.GetIsActive() {
+		panic(guru_errors.NewContactError(guru_errors.ContactDeletedStatus).GetSpecificMessage())
+
+	}
+	contactInfo = requiredContact
+	panic(guru_errors.NewContactError(guru_errors.ContactRead).GetSpecificMessage())
 
 }
 func (u *User) ReadAllContact() (allContactInfo []*guru_contacts.Contact) {
@@ -353,73 +367,83 @@ func (u *User) ReadAllContact() (allContactInfo []*guru_contacts.Contact) {
 		}
 	}()
 
-	if u.isActive {
-		for i := 0; i < len(u.Contacts); i++ {
-			allContactInfo = append(allContactInfo, u.Contacts[i].ReadContact())
-		}
-		panic(guru_errors.NewContactError(guru_errors.ContactReadAll).GetSpecificMessage())
+	if !u.isActive {
+
+		panic(guru_errors.NewUserError(guru_errors.UserDeleted).GetSpecificMessage())
 
 	}
-	panic(guru_errors.NewInvalidUserError(guru_errors.UserDeleted).GetSpecificMessage())
-}
-
-func (u *User) DeleteContact(contactIdTemp uuid.UUID) {
-	defer func() {
-		if a := recover(); a != nil {
-			fmt.Println(a)
-		}
-	}()
-	if u.isActive {
-		var requiredContact *guru_contacts.Contact = u.GetRequiredContactObjectById(contactIdTemp)
-		requiredContact.DeleteContact()
-		panic(guru_errors.NewContactError(guru_errors.ContactDeleted).GetSpecificMessage())
-
-	}
-	panic(guru_errors.NewInvalidUserError(guru_errors.UserDeleted).GetSpecificMessage())
-}
-
-func (u *User) UpdateContact(contactIdTemp uuid.UUID, updateField, updateValue string) {
-	defer func() {
-		if a := recover(); a != nil {
-			fmt.Println(a)
-		}
-	}()
-	if u.isActive {
-		var requiredContact *guru_contacts.Contact = u.GetRequiredContactObjectById(contactIdTemp)
-
-		requiredContact.UpdateContact(updateField, updateValue)
-
-		panic(guru_errors.NewInvalidUserError(guru_errors.ContactUpdated).GetSpecificMessage())
-
-	}
-	panic(guru_errors.NewInvalidUserError(guru_errors.UserDeleted).GetSpecificMessage())
-}
-
-func (u *User) GetRequiredContactObjectById(contactIdTemp uuid.UUID) *guru_contacts.Contact {
-	var requiredContact *guru_contacts.Contact
 	for i := 0; i < len(u.Contacts); i++ {
-		if u.Contacts[i].GetContactId() == contactIdTemp {
-			requiredContact = u.Contacts[i]
-			break
+		flag, contactTemp := u.Contacts[i].ReadContact()
+		if flag {
+			allContactInfo = append(allContactInfo, contactTemp)
 		}
+
 	}
-	return requiredContact
+	panic(guru_errors.NewContactError(guru_errors.ContactReadAll).GetSpecificMessage())
+
+}
+
+func (u *User) DeleteContact(contactIdTemp uuid.UUID) (deletedContact *guru_contacts.Contact) {
+	defer func() {
+		if a := recover(); a != nil {
+			fmt.Println(a)
+		}
+	}()
+	if !u.isActive {
+		panic(guru_errors.NewUserError(guru_errors.UserDeleted).GetSpecificMessage())
+
+	}
+	var requiredContact *guru_contacts.Contact = u.ReadContactById(contactIdTemp)
+	if requiredContact == nil {
+		panic(guru_errors.NewContactError(guru_errors.ContactDeletedStatus).GetSpecificMessage())
+	}
+
+	deletedContact = requiredContact.DeleteContact()
+	panic(guru_errors.NewContactError(guru_errors.ContactDeleted).GetSpecificMessage())
+
+}
+
+func (u *User) UpdateContact(contactIdTemp uuid.UUID, updateField, updateValue string) (updatedContact *guru_contacts.Contact) {
+	defer func() {
+		if a := recover(); a != nil {
+			fmt.Println(a)
+		}
+	}()
+	if !u.isActive {
+		panic(guru_errors.NewUserError(guru_errors.UserDeleted).GetSpecificMessage())
+
+	}
+
+	var requiredContact *guru_contacts.Contact = u.ReadContactById(contactIdTemp)
+	if requiredContact == nil {
+		panic(guru_errors.NewContactError(guru_errors.ContactDeletedStatus).GetSpecificMessage())
+	}
+
+	updatedContact = requiredContact.UpdateContact(updateField, updateValue)
+	panic(guru_errors.NewUserError(guru_errors.ContactUpdated).GetSpecificMessage())
+
 }
 
 // USER CRUD OPERATIONS ON CONTACT DETAILS
 // USER
-func (u *User) CreateContactDetails(contactIdTemp uuid.UUID, typeName, typeValue string) {
+func (u *User) CreateContactDetails(contactIdTemp uuid.UUID, typeName, typeValue string) (newContactDetails *guru_contact_details.ContactDetails) {
 	defer func() {
 		if a := recover(); a != nil {
 			fmt.Println(a)
 		}
 	}()
-	if u.isActive {
-		var requiredContact *guru_contacts.Contact = u.GetRequiredContactObjectById(contactIdTemp)
-		requiredContact.Contact_Details = append(requiredContact.Contact_Details, guru_contact_details.CreateContactDetails(typeName, typeValue))
-		panic(guru_errors.NewContactDetailsError(guru_errors.ContactDetailsCreated).GetSpecificMessage())
+	if !u.isActive {
+		panic(guru_errors.NewUserError(guru_errors.UserDeleted).GetSpecificMessage())
+
 	}
-	panic(guru_errors.NewInvalidUserError(guru_errors.UserDeleted).GetSpecificMessage())
+	var requiredContact *guru_contacts.Contact = u.ReadContactById(contactIdTemp)
+	if requiredContact == nil {
+		panic(guru_errors.NewContactError(guru_errors.ContactDeletedStatus).GetSpecificMessage())
+	}
+
+	newContactDetails = guru_contact_details.CreateContactDetails(typeName, typeValue)
+	requiredContact.Contact_Details = append(requiredContact.Contact_Details, newContactDetails)
+	panic(guru_errors.NewContactDetailsError(guru_errors.ContactDetailsCreated).GetSpecificMessage())
 
 }
 
@@ -436,7 +460,7 @@ func (u *User) CreateContactDetails(contactIdTemp uuid.UUID, typeName, typeValue
 
 // 		panic(guru_errors.NewContactDetailsError(guru_errors.ContactDetailsReadAll).GetSpecificMessage())
 // 	}
-// 	panic(guru_errors.NewInvalidUserError(guru_errors.UserDeleted).GetSpecificMessage())
+// 	panic(guru_errors.NewUserError(guru_errors.UserDeleted).GetSpecificMessage())
 
 // }
 
@@ -451,7 +475,7 @@ func (u *User) CreateContactDetails(contactIdTemp uuid.UUID, typeName, typeValue
 // 		contactDetailsInfo = requiredContactDetails.ReadContactDetails()
 // 		panic(guru_errors.NewContactDetailsError(guru_errors.ContactDetailsRead).GetSpecificMessage())
 // 	}
-// 	panic(guru_errors.NewInvalidUserError(guru_errors.UserDeleted).GetSpecificMessage())
+// 	panic(guru_errors.NewUserError(guru_errors.UserDeleted).GetSpecificMessage())
 
 // }
 
@@ -461,16 +485,25 @@ func (u *User) ReadAllContactDetails(contactIdTemp uuid.UUID) (allContactDetails
 			fmt.Println(a)
 		}
 	}()
-	if u.isActive {
-		var requiredContact *guru_contacts.Contact = u.GetRequiredContactObjectById(contactIdTemp)
+	if !u.isActive {
+		panic(guru_errors.NewUserError(guru_errors.UserDeleted).GetSpecificMessage())
 
-		for i := 0; i < len(requiredContact.Contact_Details); i++ {
-			allContactDetailsInfo = append(allContactDetailsInfo, requiredContact.Contact_Details[i].ReadContactDetails())
-		}
-
-		panic(guru_errors.NewContactDetailsError(guru_errors.ContactDetailsReadAll).GetSpecificMessage())
 	}
-	panic(guru_errors.NewInvalidUserError(guru_errors.UserDeleted).GetSpecificMessage())
+
+	var requiredContact *guru_contacts.Contact = u.ReadContactById(contactIdTemp)
+	if requiredContact == nil {
+		panic(guru_errors.NewContactError(guru_errors.ContactDeletedStatus).GetSpecificMessage())
+	}
+
+	for i := 0; i < len(requiredContact.Contact_Details); i++ {
+		flag, contactDetailsTemp := requiredContact.Contact_Details[i].ReadContactDetails()
+		if flag {
+			allContactDetailsInfo = append(allContactDetailsInfo, contactDetailsTemp)
+
+		}
+	}
+
+	panic(guru_errors.NewContactDetailsError(guru_errors.ContactDetailsReadAll).GetSpecificMessage())
 
 }
 
@@ -480,11 +513,29 @@ func (u *User) ReadContactDetailsById(contactIdTemp, contactDetailsIdTemp uuid.U
 			fmt.Println(a)
 		}
 	}()
-	if u.isActive {
-		requiredContactDetails = u.GetRequiredContactDetailsObjectById(contactIdTemp, contactDetailsIdTemp)
-		panic(guru_errors.NewContactDetailsError(guru_errors.ContactDetailsRead).GetSpecificMessage())
+	if !u.isActive {
+		panic(guru_errors.NewUserError(guru_errors.UserDeleted).GetSpecificMessage())
+
 	}
-	panic(guru_errors.NewInvalidUserError(guru_errors.UserDeleted).GetSpecificMessage())
+
+	var requiredContact *guru_contacts.Contact = u.ReadContactById(contactIdTemp)
+	if requiredContact == nil {
+		panic(guru_errors.NewContactError(guru_errors.ContactDeletedStatus).GetSpecificMessage())
+	}
+	var requiredContactDetailsTemp *guru_contact_details.ContactDetails
+	for i := 0; i < len(requiredContact.Contact_Details); i++ {
+		if requiredContact.Contact_Details[i].GetContactDetailsId() == contactDetailsIdTemp {
+			requiredContactDetailsTemp = requiredContact.Contact_Details[i]
+			break
+		}
+	}
+	flag, requiredContactDetailsPrint := requiredContactDetailsTemp.ReadContactDetails()
+	if !flag {
+		panic(guru_errors.NewContactDetailsError(guru_errors.ContactDetailsDeletedStatus).GetSpecificMessage())
+
+	}
+	requiredContactDetails = requiredContactDetailsPrint
+	panic(guru_errors.NewContactDetailsError(guru_errors.ContactDetailsRead).GetSpecificMessage())
 
 }
 
@@ -494,12 +545,17 @@ func (u *User) DeleteContactDetails(contactIdTemp, contactDetailsIdTemp uuid.UUI
 			fmt.Println(a)
 		}
 	}()
-	if u.isActive {
-		var requiredContactDetails *guru_contact_details.ContactDetails = u.GetRequiredContactDetailsObjectById(contactIdTemp, contactDetailsIdTemp)
-		requiredContactDetails.DeleteContactDetails()
-		panic(guru_errors.NewContactDetailsError(guru_errors.ContactDetailsDeleted).GetSpecificMessage())
+	if !u.isActive {
+		panic(guru_errors.NewUserError(guru_errors.UserDeleted).GetSpecificMessage())
+
 	}
-	panic(guru_errors.NewInvalidUserError(guru_errors.UserDeleted).GetSpecificMessage())
+	var requiredContactDetails *guru_contact_details.ContactDetails = u.ReadContactDetailsById(contactIdTemp, contactDetailsIdTemp)
+	if requiredContactDetails == nil {
+		panic(guru_errors.NewContactDetailsError(guru_errors.ContactDetailsDeletedStatus).GetSpecificMessage())
+	}
+
+	requiredContactDetails.DeleteContactDetails()
+	panic(guru_errors.NewContactDetailsError(guru_errors.ContactDetailsDeleted).GetSpecificMessage())
 
 }
 
@@ -509,23 +565,17 @@ func (u *User) UpdateContactDetails(contactIdTemp, contactDetailsIdTemp uuid.UUI
 			fmt.Println(a)
 		}
 	}()
-	if u.isActive {
-		var requiredContactDetails *guru_contact_details.ContactDetails = u.GetRequiredContactDetailsObjectById(contactIdTemp, contactDetailsIdTemp)
-		requiredContactDetails.UpdateContactDetails(keyName, keyValule)
-		panic(guru_errors.NewContactDetailsError(guru_errors.ContactDetailsUpdated).GetSpecificMessage())
-	}
-	panic(guru_errors.NewInvalidUserError(guru_errors.UserDeleted).GetSpecificMessage())
-}
+	if !u.isActive {
 
-func (u *User) GetRequiredContactDetailsObjectById(contactIdTemp, contactDetailsIdTemp uuid.UUID) *guru_contact_details.ContactDetails {
-	var requiredContactDetails *guru_contact_details.ContactDetails
-	var requiredContact *guru_contacts.Contact = u.GetRequiredContactObjectById(contactIdTemp)
-	for i := 0; i < len(requiredContact.Contact_Details); i++ {
-		if requiredContact.Contact_Details[i].GetContactDetailsId() == contactDetailsIdTemp {
-			requiredContactDetails = requiredContact.Contact_Details[i]
-			break
-		}
+		panic(guru_errors.NewUserError(guru_errors.UserDeleted).GetSpecificMessage())
+
 	}
-	return requiredContactDetails
+	var requiredContactDetails *guru_contact_details.ContactDetails = u.ReadContactDetailsById(contactIdTemp, contactDetailsIdTemp)
+	if requiredContactDetails == nil {
+		panic(guru_errors.NewContactDetailsError(guru_errors.ContactDetailsDeletedStatus).GetSpecificMessage())
+	}
+
+	requiredContactDetails.UpdateContactDetails(keyName, keyValule)
+	panic(guru_errors.NewContactDetailsError(guru_errors.ContactDetailsUpdated).GetSpecificMessage())
 
 }

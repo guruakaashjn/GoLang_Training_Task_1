@@ -2,17 +2,23 @@ package guru_errors
 
 import "errors"
 
-type invalidUserError struct {
+type userError struct {
 	Error           error
 	specificMessage string
 }
 
-const NotAnAdminError string = "user is not an admin"
+const NotAnAdminError string = "user not an admin"
 const AdminDeleted string = "admin is deleted"
-const UserDeleted string = "user is deleted"
+const AdminCreated string = "admin created successfully"
+const UserDeleted string = "user deleted successfully"
+const UserDeletedStatus string = "user is deleted"
+const UserCreated string = "user created successfully"
+const UserUpdated string = "user updated successfully"
+const UserRead string = "user read done successfully"
+const UserReadAll string = "all user read done successfully"
 
-func NewInvalidUserError(specificMessage string) *invalidUserError {
-	return &invalidUserError{
+func NewUserError(specificMessage string) *userError {
+	return &userError{
 		Error:           errors.New("invalid user"),
 		specificMessage: specificMessage,
 	}
@@ -20,7 +26,7 @@ func NewInvalidUserError(specificMessage string) *invalidUserError {
 	// return newObjectOfInvalidUser
 }
 
-func (e *invalidUserError) GetSpecificMessage() string {
+func (e *userError) GetSpecificMessage() string {
 	return e.specificMessage
 }
 
@@ -29,11 +35,12 @@ type contactError struct {
 	specificMessage string
 }
 
-const ContactDeleted string = "contact deleted"
-const ContactUpdated string = "contact updated"
-const ContactCreated string = "contact created"
-const ContactReadAll string = "all contacts read done"
-const ContactRead string = "contact read done"
+const ContactDeleted string = "contact deleted successfully"
+const ContactDeletedStatus string = "contact is deleted"
+const ContactUpdated string = "contact updated successfully"
+const ContactCreated string = "contact created successfully"
+const ContactReadAll string = "all contacts read done successfully"
+const ContactRead string = "contact read done successfully"
 
 func NewContactError(specificMessage string) *contactError {
 	return &contactError{
@@ -53,11 +60,12 @@ type contactDetailsError struct {
 	specificMessage string
 }
 
-const ContactDetailsDeleted string = "contact details deleted"
-const ContactDetailsUpdated string = "contact details updated"
-const ContactDetailsCreated string = "contact details created"
-const ContactDetailsReadAll string = "all contacts details read done"
-const ContactDetailsRead string = "contact details read done"
+const ContactDetailsDeleted string = "contact details deleted successfully"
+const ContactDetailsDeletedStatus string = "contact details is deleted"
+const ContactDetailsUpdated string = "contact details updated successfully"
+const ContactDetailsCreated string = "contact details created successfully"
+const ContactDetailsReadAll string = "all contacts details read done successfully"
+const ContactDetailsRead string = "contact details read done successfully"
 
 func NewContactDetailsError(specificMessage string) *contactDetailsError {
 	return &contactDetailsError{
