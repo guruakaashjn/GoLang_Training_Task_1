@@ -29,8 +29,47 @@ func NewAccount(bankId uuid.UUID, customerId uuid.UUID, balance int) *Account {
 		passbook:      newPassbook,
 	}
 }
+
+func CreateAccount(bankId uuid.UUID, customerId uuid.UUID, balance int) (account *Account) {
+
+	return NewAccount(bankId, customerId, balance)
+
+}
+
+func (a *Account) ReadAccount() (bool, *Account) {
+	if a.isActive {
+		return true, a
+	}
+	return false, a
+
+}
+func (a *Account) UpdateAccount(updateField string, updateValue interface{}) *Account {
+	// balance, abbr
+
+	switch updateValue := updateValue.(type) {
+	case int:
+		a.SetBalance(updateValue)
+	case uuid.UUID:
+		a.bankId = updateValue
+	}
+
+	return a
+
+}
+func (a *Account) DeleteAccount() *Account {
+
+	a.SetIsActive()
+	return a
+}
+
 func (a *Account) GetAccountNumber() uuid.UUID {
 	return a.accountNumber
+}
+func (a *Account) GetBankId() uuid.UUID {
+	return a.bankId
+}
+func (a *Account) GetCustomerId() uuid.UUID {
+	return a.customerId
 }
 func (a *Account) GetIsActive() bool {
 	return a.isActive
@@ -52,8 +91,8 @@ func (a *Account) DepositMoney(amount int) {
 func (a *Account) WithdrawMoney(amount int) {
 
 	defer func() {
-		if a := recover(); a != nil {
-			fmt.Println(a)
+		if err := recover(); err != nil {
+			fmt.Println(err)
 		}
 	}()
 
@@ -68,8 +107,8 @@ func (a *Account) WithdrawMoney(amount int) {
 func (a *Account) TransferMoney(receiver *Account, amount int) {
 
 	defer func() {
-		if a := recover(); a != nil {
-			fmt.Println(a)
+		if err := recover(); err != nil {
+			fmt.Println(err)
 		}
 	}()
 
@@ -78,73 +117,4 @@ func (a *Account) TransferMoney(receiver *Account, amount int) {
 		receiver.balance += amount
 	}
 	panic(guru_errors.NewAccountError(guru_errors.InSufficientBalance).GetSpecificMessage())
-}
-
-func CreateAccount(bankId uuid.UUID, customerId uuid.UUID, balance int) *Account {
-
-	defer func() {
-		if a := recover(); a != nil {
-			fmt.Println(a)
-		}
-	}()
-	if balance >= 1000 {
-		return NewAccount(bankId, customerId, balance)
-	}
-	panic(guru_errors.NewAccountError(guru_errors.InSufficientBalance).GetSpecificMessage())
-
-}
-
-func (a *Account) ReadAccount() *Account {
-	defer func() {
-		if a := recover(); a != nil {
-			fmt.Println(a)
-		}
-	}()
-	if a.isActive {
-		return &Account{
-			accountNumber: a.accountNumber,
-			bankId:        a.bankId,
-			balance:       a.balance,
-		}
-	}
-	panic(guru_errors.NewAccountError(guru_errors.DeletedAccountStatus).GetSpecificMessage())
-
-}
-func (a *Account) UpdateAccount(updateField string, updateValue interface{}) (flag bool) {
-	// balance, abbr
-	flag = false
-	defer func() {
-		if a := recover(); a != nil {
-			fmt.Println(a)
-
-		}
-	}()
-	if a.isActive {
-		switch updateValue.(type) {
-		case int:
-			a.SetBalance(updateValue.(int))
-		case uuid.UUID:
-			a.bankId = updateValue.(uuid.UUID)
-		}
-
-		flag = true
-		panic(guru_errors.NewAccountError(guru_errors.UpdatedAccount).GetSpecificMessage())
-	}
-	panic(guru_errors.NewAccountError(guru_errors.DeletedAccountStatus).GetSpecificMessage())
-
-}
-func (a *Account) DeleteAccount() (flag bool) {
-	flag = false
-	defer func() {
-		if a := recover(); a != nil {
-			fmt.Println(a)
-
-		}
-	}()
-	if a.isActive {
-		a.SetIsActive()
-		flag = true
-		panic(guru_errors.NewAccountError(guru_errors.DeletedAccount).GetSpecificMessage())
-	}
-	panic(guru_errors.NewAccountError(guru_errors.DeletedAccountAlready).GetSpecificMessage())
 }

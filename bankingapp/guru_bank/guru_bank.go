@@ -2,9 +2,6 @@ package guru_bank
 
 import (
 	"bankingapp/guru_account"
-	"bankingapp/guru_customer"
-	"bankingapp/guru_errors"
-	"fmt"
 	"math/rand"
 	"strconv"
 
@@ -23,21 +20,16 @@ type Bank struct {
 
 func NewBank(fullName string) *Bank {
 	var abbr string = setAbbreviation(fullName)
-	return &Bank{
+	var initialAccountsList []*guru_account.Account = make([]*guru_account.Account, 0)
+	var newBankObject = &Bank{
 		bankId:       uuid.New(),
 		fullName:     fullName,
 		abbreviation: abbr,
 		isActive:     true,
-		Accounts:     make([]*guru_account.Account, 0),
+		Accounts:     initialAccountsList,
 	}
-}
-func (b *Bank) GetNetWorthOfBank() (networth int) {
-
-	for i := 0; i < len(b.Accounts); i++ {
-		networth += b.Accounts[i].GetBalance()
-	}
-
-	return networth
+	Banks = append(Banks, newBankObject)
+	return newBankObject
 }
 
 func (b *Bank) GetAbbreviation() string {
@@ -68,121 +60,80 @@ func checkAbbreviation(abbr string) (flag bool) {
 	return true
 }
 
-func CreateBank(c *guru_customer.Customer, fullName string) (flag bool, bankName *Bank) {
-	flag = false
-	defer func() {
-		if a := recover(); a != nil {
-			fmt.Println(a)
-		}
-	}()
-	if c.GetIsAdmin() && c.GetIsActive() {
-		flag = true
-		return true, NewBank(fullName)
+func CreateBank(fullName string) (bank *Bank) {
 
-	}
-	if c.GetIsAdmin() && !c.GetIsActive() {
-		panic(guru_errors.NewAdminError(guru_errors.DeletedUser).GetSpecificMessage())
-	}
-	panic(guru_errors.NewAdminError(guru_errors.NotAdmin).GetSpecificMessage())
-}
-
-func (b *Bank) AddAccount(c *guru_customer.Customer, a *guru_account.Account) (flag bool) {
-
-	flag = false
-	defer func() {
-		if a := recover(); a != nil {
-			fmt.Println(a)
-		}
-	}()
-	if c.GetIsActive() {
-		c.Accounts = append(c.Accounts, a)
-		flag = true
-		return flag
-	}
-	panic(guru_errors.NewNotAUser(guru_errors.DeletedUser).GetSpecificMessage())
-
-}
-func (b *Bank) ReadBank(c *guru_customer.Customer) (flag bool, bank *Bank) {
-	flag = false
-	defer func() {
-		if a := recover(); a != nil {
-			fmt.Println(a)
-
-		}
-	}()
-
-	if c.GetIsAdmin() && c.GetIsActive() {
-		flag = true
-		return true, &Bank{
-			bankId:       b.bankId,
-			fullName:     b.fullName,
-			abbreviation: b.abbreviation,
-			isActive:     b.isActive,
-			Accounts:     b.Accounts,
-		}
-	}
-	if c.GetIsAdmin() && !c.GetIsActive() {
-		panic(guru_errors.NewNotAUser(guru_errors.DeletedUser).GetSpecificMessage())
-	}
-	panic(guru_errors.NewAdminError(guru_errors.NotAdmin).GetSpecificMessage())
-
-}
-func (b *Bank) ReadAllBanks(c *guru_customer.Customer) []*Bank {
-	defer func() {
-		if a := recover(); a != nil {
-			fmt.Println(a)
-		}
-	}()
-	if c.GetIsAdmin() && c.GetIsActive() {
-		return Banks
-	}
-	if c.GetIsAdmin() && !c.GetIsAdmin() {
-		panic(guru_errors.NewNotAUser(guru_errors.DeletedUser).GetSpecificMessage())
-	}
-	panic(guru_errors.NewAdminError(guru_errors.NotAdmin).GetSpecificMessage())
-}
-
-func (b *Bank) UpdateBank(c *guru_customer.Customer, updateValue string) (flag bool) {
-	flag = false
-
-	defer func() {
-		if a := recover(); a != nil {
-			fmt.Println(a)
-		}
-	}()
-	if c.GetIsAdmin() && c.GetIsActive() {
-
-		b.fullName = updateValue
-		b.abbreviation = setAbbreviation(b.fullName)
-		flag = true
-	}
-	if c.GetIsAdmin() && !c.GetIsAdmin() {
-		panic(guru_errors.NewNotAUser(guru_errors.DeletedUser).GetSpecificMessage())
-	}
-	panic(guru_errors.NewAdminError(guru_errors.NotAdmin).GetSpecificMessage())
+	return NewBank(fullName)
 
 }
 
-func (b *Bank) DeleteBank(c *guru_customer.Customer) (flag bool) {
-	flag = false
-	defer func() {
-		if a := recover(); a != nil {
-			fmt.Println(a)
+func (b *Bank) ReadBank() (bool, *Bank) {
+	if b.isActive {
+		return true, b
+	}
+	return false, b
 
+}
+func ReadBankById(bankIdTemp uuid.UUID) (bool, *Bank) {
+	var bank *Bank
+	for i := 0; i < len(Banks); i++ {
+		if Banks[i].bankId == bankIdTemp {
+			bank = Banks[i]
+			break
 		}
-	}()
+	}
+	if bank.isActive {
+		return true, bank
+	}
+	return false, bank
+}
+func ReadAllBanks() []*Bank {
 
-	if c.GetIsAdmin() && c.GetIsActive() && len(b.Accounts) == 0 {
-		b.isActive = false
-		flag = true
-		panic(guru_errors.NewBankError(guru_errors.DeletedBank).GetSpecificMessage())
+	var allBanks []*Bank
+	for i := 0; i < len(Banks); i++ {
+		if Banks[i].isActive {
+			allBanks = append(allBanks, Banks[i])
+		}
 	}
-	if c.GetIsAdmin() && c.GetIsActive() && len(b.Accounts) != 0 {
-		panic(guru_errors.NewBankError(guru_errors.BankContainsAccounts).GetSpecificMessage())
-	}
-	if c.GetIsAdmin() && !c.GetIsActive() {
-		panic(guru_errors.NewNotAUser(guru_errors.DeletedUser).GetSpecificMessage())
-	}
-	panic(guru_errors.NewAdminError(guru_errors.NotAdmin).GetSpecificMessage())
 
+	return allBanks
+
+}
+
+func (b *Bank) UpdateBank(updateValue string) *Bank {
+
+	b.fullName = updateValue
+	b.abbreviation = setAbbreviation(b.fullName)
+	return b
+
+}
+
+func (b *Bank) DeleteBank() *Bank {
+
+	b.isActive = false
+	return b
+
+}
+
+// HELPER FUNCTIONS
+func (b *Bank) GetBankId() uuid.UUID {
+	return b.bankId
+}
+func (b *Bank) GetNetWorthOfBank() (networth int) {
+
+	for i := 0; i < len(b.Accounts); i++ {
+		networth += b.Accounts[i].GetBalance()
+	}
+
+	return networth
+}
+
+func (b *Bank) CheckBankContainsActiveAccounts() bool {
+	var flag bool = false
+	for i := 0; i < len(b.Accounts); i++ {
+		if b.Accounts[i].GetIsActive() {
+			flag = true
+			break
+		}
+	}
+	return flag
 }

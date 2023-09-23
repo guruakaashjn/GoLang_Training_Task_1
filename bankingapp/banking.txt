@@ -36,3 +36,14 @@ ubi -1500
 history (to_date, from_date)
 corner case nil, (2/2/2020) --> (2/2/2020, nil) --> (nil, nil) --> (2/2/2019, 2/2/2020)
 
+
+
+1) take two strings as inputs and then check the second string is a substring or not
+string and an integer as an input
+
+2) xAb 2
+   zCd
+
+
+
+

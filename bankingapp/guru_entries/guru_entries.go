@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type Entries struct {
+type Entry struct {
 	timeStampDate     string
 	timeStampTime     string
 	senderId          uuid.UUID
@@ -17,9 +17,9 @@ type Entries struct {
 	transactionType   string
 }
 
-func NewEntries(senderId, receiverId uuid.UUID, senderAccountId, receiverAccountId uuid.UUID, amount int, transactionType string) *Entries {
+func NewEntry(senderId, receiverId uuid.UUID, senderAccountId, receiverAccountId uuid.UUID, amount int, transactionType string) *Entry {
 	now := time.Now()
-	return &Entries{
+	return &Entry{
 		timeStampDate:     now.Format("2006-01-02"),
 		timeStampTime:     now.Format("15:04:05"),
 		senderId:          senderId,
@@ -29,4 +29,8 @@ func NewEntries(senderId, receiverId uuid.UUID, senderAccountId, receiverAccount
 		amount:            amount,
 		transactionType:   transactionType,
 	}
+}
+
+func CreateEntry(senderId, receiverId uuid.UUID, senderAccountId, receiverAccountId uuid.UUID, amount int, transactionType string) *Entry {
+	return NewEntry(senderId, receiverId, senderAccountId, receiverAccountId, amount, transactionType)
 }

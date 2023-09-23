@@ -8,6 +8,8 @@ type AdminError struct {
 }
 
 const NotAdmin string = "user not an admin"
+const CreatedAdmin string = "admin created successfully"
+const DeletedAdmin string = "admin is deleted"
 
 func NewAdminError(specificMessage string) *AdminError {
 	return &AdminError{
@@ -20,22 +22,25 @@ func (e *AdminError) GetSpecificMessage() string {
 	return e.specificMessage
 }
 
-type NotAUser struct {
+type UserError struct {
 	errorType       error
 	specificMessage string
 }
 
-const DeletedUser string = "user is deleted"
+const DeletedUser string = "user is deleted successfully"
 const NotExistUser string = "user doesn't exist"
-const UpdatedUser string = "user is updated"
+const DeletedUserStatus string = "user is deleted"
+const UpdatedUser string = "user is updated successfully"
+const CreatedUser string = "user is created successfully"
+const ReadUser string = "user read done successfully"
 
-func NewNotAUser(specificMessage string) *NotAUser {
-	return &NotAUser{
+func NewUserError(specificMessage string) *UserError {
+	return &UserError{
 		errorType:       errors.New("user error"),
 		specificMessage: specificMessage,
 	}
 }
-func (e *NotAUser) GetSpecificMessage() string {
+func (e *UserError) GetSpecificMessage() string {
 	return e.specificMessage
 }
 
@@ -44,8 +49,11 @@ type AccountError struct {
 	specificMessage string
 }
 
-const DeletedAccount string = "account deleted"
-const UpdatedAccount string = "account updated"
+const DeletedAccount string = "account deleted successfully"
+const UpdatedAccount string = "account updated successfully"
+const CreatedAccount string = "account created successfully"
+const ReadAccount string = "account read done successfully"
+
 const DeletedAccountStatus string = "account is deleted"
 const DeletedAccountAlready string = "account is deleted already"
 const NotExistAccount string = "account doesn't exist"
@@ -67,8 +75,11 @@ type BankError struct {
 }
 
 const BankContainsAccounts string = "bank cannot be deleted as it contains open bank accounts"
-const DeletedBank string = "bank deleted"
-const UpdatedBank string = "bank details updated"
+const DeletedBank string = "bank deleted successfully"
+const UpdatedBank string = "bank details updated successfully"
+const CreatedBank string = "bank created successfully"
+const ReadBank string = "bank read done successfully"
+const DeletedBankStatus string = "bank is deleted"
 
 func NewBankError(specificMessage string) *BankError {
 	return &BankError{
