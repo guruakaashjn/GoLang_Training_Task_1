@@ -2,8 +2,10 @@ package guru_bank
 
 import (
 	"bankingapp/guru_account"
+	"bankingapp/guru_bank_passbook"
 	"math/rand"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -11,25 +13,27 @@ import (
 var Banks = make([]*Bank, 0)
 
 type Bank struct {
-	bankId             uuid.UUID
-	fullName           string
-	abbreviation       string
-	isActive           bool
-	Accounts           []*guru_account.Account
-	bankTransferAllMap map[uuid.UUID]int
+	bankId       uuid.UUID
+	fullName     string
+	abbreviation string
+	isActive     bool
+	Accounts     []*guru_account.Account
+	bankPassbook *guru_bank_passbook.BankPassbook
 }
 
 func NewBank(fullName string) *Bank {
 	var abbr string = setAbbreviation(fullName)
 	var initialAccountsList []*guru_account.Account = make([]*guru_account.Account, 0)
-	var bankTransferAllMapInitial map[uuid.UUID]int = make(map[uuid.UUID]int)
+
+	var bankPassbookInitial *guru_bank_passbook.BankPassbook = guru_bank_passbook.CreateBankPassbook()
 	var newBankObject = &Bank{
-		bankId:             uuid.New(),
-		fullName:           fullName,
-		abbreviation:       abbr,
-		isActive:           true,
-		Accounts:           initialAccountsList,
-		bankTransferAllMap: bankTransferAllMapInitial,
+		bankId:       uuid.New(),
+		fullName:     fullName,
+		abbreviation: abbr,
+		isActive:     true,
+		Accounts:     initialAccountsList,
+
+		bankPassbook: bankPassbookInitial,
 	}
 	Banks = append(Banks, newBankObject)
 	return newBankObject
@@ -143,10 +147,12 @@ func (b *Bank) CheckBankContainsActiveAccounts() bool {
 	}
 	return flag
 }
-func (b *Bank) SetBankTransferAllMap(bankIdTemp uuid.UUID, balance int) {
-	b.bankTransferAllMap[bankIdTemp] += balance
 
+func (b *Bank) GetBankPassbook() *guru_bank_passbook.BankPassbook {
+	return b.bankPassbook
 }
-func (b *Bank) GetBankTransferAllMap() map[uuid.UUID]int {
-	return b.bankTransferAllMap
+
+func (b *Bank) ReadPassbookFromRange(fromDate time.Time, toDate time.Time) map[uuid.UUID]int {
+
+	return b.bankPassbook.ReadAllEntries(fromDate, toDate)
 }

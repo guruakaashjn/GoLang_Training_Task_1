@@ -485,6 +485,7 @@ func (c *Customer) DepositMoney(accountNumberTemp uuid.UUID, amount int) (update
 	}
 	depositedAccount := requiredAccount.DepositMoney(amount)
 	updatedAccountTemp := c.UpdateAccount(depositedAccount.GetAccountNumber(), "balance", depositedAccount.GetBalance())
+
 	if updatedAccountTemp == nil {
 		panic(guru_errors.NewAccountError(guru_errors.MoneyDepositedError).GetSpecificMessage())
 	}
@@ -569,9 +570,10 @@ func (c *Customer) TransferMoney(senderAccountNumber, receiverAccountNumber uuid
 	if !flag2 {
 		panic(guru_errors.NewAccountError(guru_errors.DeletedBankStatus).GetSpecificMessage())
 	}
-	senderBank.SetBankTransferAllMap(receiverBank.GetBankId(), 0-amount)
-	receiverBank.SetBankTransferAllMap(senderBank.GetBankId(), amount)
-	//
+
+	senderBank.GetBankPassbook().AddEntry(senderBank.GetBankId(), receiverBank.GetBankId(), 0-amount)
+	receiverBank.GetBankPassbook().AddEntry(senderBank.GetBankId(), receiverBank.GetBankId(), amount)
+
 	updatedSenderAccount = updatedSenderAccountTemp
 	updatedReceiverAccount = updatedReceiverAccountTemp
 	panic(guru_errors.NewAccountError(guru_errors.MoneyTransfered).GetSpecificMessage())
@@ -678,7 +680,7 @@ func (c *Customer) GetPassbookInRange(accountNumberTemp uuid.UUID, startDate str
 
 }
 
-func (c *Customer) BankTransferAllMapByBankId(bankIdTemp uuid.UUID) (bankTransferAllMapByBankId map[string]int) {
+func (c *Customer) BankTransferMapNameBalanceByBankId(bankIdTemp uuid.UUID, fromDate string, toDate string) (bankTransferAllMapByBankId map[string]int) {
 	defer func() {
 		if a := recover(); a != nil {
 			fmt.Println(a)
@@ -696,15 +698,25 @@ func (c *Customer) BankTransferAllMapByBankId(bankIdTemp uuid.UUID) (bankTransfe
 		panic(guru_errors.NewBankError(guru_errors.DeletedBankStatus).GetSpecificMessage())
 	}
 
-	var bankTransferAllMapIdBalance map[uuid.UUID]int = requiredBank.GetBankTransferAllMap()
-	for key, value := range bankTransferAllMapIdBalance {
+	var fromDateGoTime time.Time
+	var toDateGoTime time.Time
+
+	if fromDate == "" {
+		fromDate = "1970-01-01"
+	}
+	if toDate == "" {
+		toDate = time.Now().Format("2006-01-02")
+	}
+	fromDateGoTime, _ = time.Parse("2006-01-02", fromDate)
+	toDateGoTime, _ = time.Parse("2006-01-02", toDate)
+
+	bankTransferTemp := requiredBank.ReadPassbookFromRange(fromDateGoTime, toDateGoTime)
+	for key, value := range bankTransferTemp {
 		bankTransferAllMapByBankId[c.GetBankNameById(key)] = value
 	}
 	panic(guru_errors.NewBankError(guru_errors.ReadBankTransferAllMap).GetSpecificMessage())
-
 }
-
-func (c *Customer) BankTransferAllMapAll() (bankTransferAllMap []map[string]int) {
+func (c *Customer) BankTransferMapNameBalanceAll(fromDate string, toDate string) (bankTransferAllMap []map[string]int) {
 	defer func() {
 		if a := recover(); a != nil {
 			fmt.Println(a)
@@ -717,12 +729,60 @@ func (c *Customer) BankTransferAllMapAll() (bankTransferAllMap []map[string]int)
 	if !c.isActive {
 		panic(guru_errors.NewAdminError(guru_errors.DeletedAdmin).GetSpecificMessage())
 	}
-	for i := 0; i < len(guru_bank.Banks); i++ {
-		bankTransferAllMap = append(bankTransferAllMap, c.BankTransferAllMapByBankId(guru_bank.Banks[i].GetBankId()))
 
+	for i := 0; i < len(guru_bank.Banks); i++ {
+		bankTransferAllMapByBankId := c.BankTransferMapNameBalanceByBankId(guru_bank.Banks[i].GetBankId(), fromDate, toDate)
+		bankTransferAllMap = append(bankTransferAllMap, bankTransferAllMapByBankId)
 	}
+
 	panic(guru_errors.NewBankError(guru_errors.ReadBankTransferAllMap).GetSpecificMessage())
 }
+
+// func (c *Customer) BankTransferAllMapByBankId(bankIdTemp uuid.UUID) (bankTransferAllMapByBankId map[string]int) {
+// 	defer func() {
+// 		if a := recover(); a != nil {
+// 			fmt.Println(a)
+// 		}
+// 	}()
+
+// 	if !c.isAdmin {
+// 		panic(guru_errors.NewAdminError(guru_errors.NotAdmin).GetSpecificMessage())
+// 	}
+// 	if !c.isActive {
+// 		panic(guru_errors.NewAdminError(guru_errors.DeletedAdmin).GetSpecificMessage())
+// 	}
+// 	var requiredBank *guru_bank.Bank = c.ReadBankById(bankIdTemp)
+// 	if requiredBank == nil {
+// 		panic(guru_errors.NewBankError(guru_errors.DeletedBankStatus).GetSpecificMessage())
+// 	}
+
+// 	var bankTransferAllMapIdBalance map[uuid.UUID]int = requiredBank.GetBankTransferAllMap()
+// 	for key, value := range bankTransferAllMapIdBalance {
+// 		bankTransferAllMapByBankId[c.GetBankNameById(key)] = value
+// 	}
+// 	panic(guru_errors.NewBankError(guru_errors.ReadBankTransferAllMap).GetSpecificMessage())
+
+// }
+
+// func (c *Customer) BankTransferAllMapAll() (bankTransferAllMap []map[string]int) {
+// 	defer func() {
+// 		if a := recover(); a != nil {
+// 			fmt.Println(a)
+// 		}
+// 	}()
+
+// 	if !c.isAdmin {
+// 		panic(guru_errors.NewAdminError(guru_errors.NotAdmin).GetSpecificMessage())
+// 	}
+// 	if !c.isActive {
+// 		panic(guru_errors.NewAdminError(guru_errors.DeletedAdmin).GetSpecificMessage())
+// 	}
+// 	for i := 0; i < len(guru_bank.Banks); i++ {
+// 		bankTransferAllMap = append(bankTransferAllMap, c.BankTransferAllMapByBankId(guru_bank.Banks[i].GetBankId()))
+
+// 	}
+// 	panic(guru_errors.NewBankError(guru_errors.ReadBankTransferAllMap).GetSpecificMessage())
+// }
 
 func (c *Customer) GetBankNameById(bankIdTemp uuid.UUID) string {
 	return c.ReadBankById(bankIdTemp).GetBankName()
