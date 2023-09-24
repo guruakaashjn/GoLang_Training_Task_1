@@ -11,22 +11,25 @@ import (
 var Banks = make([]*Bank, 0)
 
 type Bank struct {
-	bankId       uuid.UUID
-	fullName     string
-	abbreviation string
-	isActive     bool
-	Accounts     []*guru_account.Account
+	bankId             uuid.UUID
+	fullName           string
+	abbreviation       string
+	isActive           bool
+	Accounts           []*guru_account.Account
+	bankTransferAllMap map[uuid.UUID]int
 }
 
 func NewBank(fullName string) *Bank {
 	var abbr string = setAbbreviation(fullName)
 	var initialAccountsList []*guru_account.Account = make([]*guru_account.Account, 0)
+	var bankTransferAllMapInitial map[uuid.UUID]int = make(map[uuid.UUID]int)
 	var newBankObject = &Bank{
-		bankId:       uuid.New(),
-		fullName:     fullName,
-		abbreviation: abbr,
-		isActive:     true,
-		Accounts:     initialAccountsList,
+		bankId:             uuid.New(),
+		fullName:           fullName,
+		abbreviation:       abbr,
+		isActive:           true,
+		Accounts:           initialAccountsList,
+		bankTransferAllMap: bankTransferAllMapInitial,
 	}
 	Banks = append(Banks, newBankObject)
 	return newBankObject
@@ -118,6 +121,9 @@ func (b *Bank) DeleteBank() *Bank {
 func (b *Bank) GetBankId() uuid.UUID {
 	return b.bankId
 }
+func (b *Bank) GetBankName() string {
+	return b.fullName
+}
 func (b *Bank) GetNetWorthOfBank() (networth int) {
 
 	for i := 0; i < len(b.Accounts); i++ {
@@ -136,4 +142,11 @@ func (b *Bank) CheckBankContainsActiveAccounts() bool {
 		}
 	}
 	return flag
+}
+func (b *Bank) SetBankTransferAllMap(bankIdTemp uuid.UUID, balance int) {
+	b.bankTransferAllMap[bankIdTemp] += balance
+
+}
+func (b *Bank) GetBankTransferAllMap() map[uuid.UUID]int {
+	return b.bankTransferAllMap
 }

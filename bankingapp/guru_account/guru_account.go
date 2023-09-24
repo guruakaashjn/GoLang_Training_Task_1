@@ -1,9 +1,8 @@
 package guru_account
 
 import (
-	"bankingapp/guru_errors"
 	"bankingapp/guru_passbook"
-	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -84,37 +83,27 @@ func (a *Account) SetBalance(balance int) {
 	a.balance = balance
 }
 
-func (a *Account) DepositMoney(amount int) {
+func (a *Account) GetPassbook(startDate, endDate time.Time) *guru_passbook.Passbook {
+	return a.passbook.ReadPassbook(startDate, endDate)
+}
+func (a *Account) DepositMoney(amount int) *Account {
 	a.balance += amount
 	a.passbook.AddEntry(a.customerId, a.customerId, a.accountNumber, a.accountNumber, amount, "CREDIT")
+	return a
 }
-func (a *Account) WithdrawMoney(amount int) {
 
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println(err)
-		}
-	}()
-
-	if a.balance-amount >= 0 {
-		a.balance -= amount
-		a.passbook.AddEntry(a.customerId, a.customerId, a.accountNumber, a.accountNumber, amount, "")
-	}
-	panic(guru_errors.NewAccountError(guru_errors.InSufficientBalance).GetSpecificMessage())
+func (a *Account) WithdrawMoney(amount int) *Account {
+	a.balance -= amount
+	a.passbook.AddEntry(a.customerId, a.customerId, a.accountNumber, a.accountNumber, amount, "DEBIT")
+	return a
 
 }
 
-func (a *Account) TransferMoney(receiver *Account, amount int) {
+func (a *Account) TransferMoney(receiver *Account, amount int) (*Account, *Account) {
 
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println(err)
-		}
-	}()
-
-	if a.balance-amount >= 0 {
-		a.balance -= amount
-		receiver.balance += amount
-	}
-	panic(guru_errors.NewAccountError(guru_errors.InSufficientBalance).GetSpecificMessage())
+	a.balance -= amount
+	receiver.balance += amount
+	a.passbook.AddEntry(a.customerId, receiver.customerId, a.accountNumber, receiver.accountNumber, amount, "DEBIT")
+	receiver.passbook.AddEntry(a.customerId, receiver.customerId, a.accountNumber, receiver.accountNumber, amount, "CREDIT")
+	return a, receiver
 }

@@ -34,3 +34,7 @@ func NewEntry(senderId, receiverId uuid.UUID, senderAccountId, receiverAccountId
 func CreateEntry(senderId, receiverId uuid.UUID, senderAccountId, receiverAccountId uuid.UUID, amount int, transactionType string) *Entry {
 	return NewEntry(senderId, receiverId, senderAccountId, receiverAccountId, amount, transactionType)
 }
+
+func (e *Entry) GetTimeStampDate() string {
+	return e.timeStampDate
+}

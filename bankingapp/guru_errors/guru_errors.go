@@ -33,6 +33,9 @@ const DeletedUserStatus string = "user is deleted"
 const UpdatedUser string = "user is updated successfully"
 const CreatedUser string = "user is created successfully"
 const ReadUser string = "user read done successfully"
+const UserTotalBalance string = "user total balance calculated successfully"
+const UserAccoutBalanceMap string = "user account balance corresponding to each account listed cussessfully"
+const BankNetWorthMap string = "total bank net worth corresponding to each bank listed successfully"
 
 func NewUserError(specificMessage string) *UserError {
 	return &UserError{
@@ -59,6 +62,15 @@ const DeletedAccountAlready string = "account is deleted already"
 const NotExistAccount string = "account doesn't exist"
 const InSufficientBalance string = "account balance in-sufficient"
 
+const MoneyDeposited string = "money deposited successfully"
+const MoneyDepositedError string = "money deposited un-successful"
+const MoneyWithdraw string = "money withdraw successfully"
+const MoneyWithdrawError string = "money withdraw un-successful"
+const MoneyTransfered string = "money transfered successfully"
+const MoneyTransferedError string = "money transfered un-successful"
+
+const PassbookReadInRange string = "passbook read in given range done successfully"
+
 func NewAccountError(specificMessage string) *AccountError {
 	return &AccountError{
 		errorType:       errors.New("account error"),
@@ -80,6 +92,7 @@ const UpdatedBank string = "bank details updated successfully"
 const CreatedBank string = "bank created successfully"
 const ReadBank string = "bank read done successfully"
 const DeletedBankStatus string = "bank is deleted"
+const ReadBankTransferAllMap string = "bank transfer all map read done successfully"
 
 func NewBankError(specificMessage string) *BankError {
 	return &BankError{

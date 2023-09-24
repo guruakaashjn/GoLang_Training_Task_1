@@ -4,7 +4,9 @@ import (
 	"bankingapp/guru_account"
 	"bankingapp/guru_bank"
 	"bankingapp/guru_errors"
+	"bankingapp/guru_passbook"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -230,12 +232,12 @@ func (c *Customer) ReadBankById(bankIdTemp uuid.UUID) (bank *guru_bank.Bank) {
 	}
 
 	flag, requiredBank := guru_bank.ReadBankById(bankIdTemp)
-	if flag {
-		bank = requiredBank
-		panic(guru_errors.NewBankError(guru_errors.ReadBank).GetSpecificMessage())
-	}
+	if !flag {
+		panic(guru_errors.NewBankError(guru_errors.DeletedBankStatus).GetSpecificMessage())
 
-	panic(guru_errors.NewBankError(guru_errors.DeletedBankStatus).GetSpecificMessage())
+	}
+	bank = requiredBank
+	panic(guru_errors.NewBankError(guru_errors.ReadBank).GetSpecificMessage())
 
 }
 
@@ -318,7 +320,7 @@ func (c *Customer) CreateAccount(bankIdTemp uuid.UUID, balance int) (account *gu
 		}
 	}()
 	if !c.isActive {
-		panic(guru_errors.NewUserError(guru_errors.DeletedUser).GetSpecificMessage())
+		panic(guru_errors.NewUserError(guru_errors.DeletedUserStatus).GetSpecificMessage())
 	}
 	if balance < 1000 {
 		panic(guru_errors.NewAccountError(guru_errors.InSufficientBalance).GetSpecificMessage())
@@ -343,7 +345,7 @@ func (c *Customer) ReadAccountById(accountIdTemp uuid.UUID) (requiredAccount *gu
 		}
 	}()
 	if !c.isActive {
-		panic(guru_errors.NewUserError(guru_errors.DeletedUser).GetSpecificMessage())
+		panic(guru_errors.NewUserError(guru_errors.DeletedUserStatus).GetSpecificMessage())
 	}
 
 	var requiredAccountTemp *guru_account.Account
@@ -369,7 +371,7 @@ func (c *Customer) ReadAllAccountsOfCustomer() (allAccounts []*guru_account.Acco
 		}
 	}()
 	if !c.isActive {
-		panic(guru_errors.NewUserError(guru_errors.DeletedUser).GetSpecificMessage())
+		panic(guru_errors.NewUserError(guru_errors.DeletedUserStatus).GetSpecificMessage())
 	}
 	for i := 0; i < len(c.Accounts); i++ {
 		flag, singleAccount := c.Accounts[i].ReadAccount()
@@ -387,31 +389,38 @@ func (c *Customer) UpdateAccount(accountIdTemp uuid.UUID, updateField string, up
 		}
 	}()
 	if !c.isActive {
-		panic(guru_errors.NewUserError(guru_errors.DeletedUser).GetSpecificMessage())
+		panic(guru_errors.NewUserError(guru_errors.DeletedUserStatus).GetSpecificMessage())
 	}
 
 	requiredAccount := c.ReadAccountById(accountIdTemp)
 	if requiredAccount == nil {
-		panic(guru_errors.NewAccountError(guru_errors.DeletedAccountAlready).GetSpecificMessage())
+		panic(guru_errors.NewAccountError(guru_errors.DeletedAccountStatus).GetSpecificMessage())
 	}
-	updatedAccount = requiredAccount.UpdateAccount(updateField, updateValue)
+	updatedAccountTemp := requiredAccount.UpdateAccount(updateField, updateValue)
 
-	_, requiredBank := guru_bank.ReadBankById(updatedAccount.GetBankId())
+	flag1, requiredBank := guru_bank.ReadBankById(updatedAccountTemp.GetBankId())
+	if !flag1 {
+		panic(guru_errors.NewAccountError(guru_errors.DeletedBankStatus).GetSpecificMessage())
+	}
+	flag2, requiredCustomer := ReadCustomerById(updatedAccountTemp.GetCustomerId())
+	if !flag2 {
+		panic(guru_errors.NewAccountError(guru_errors.DeletedUserStatus).GetSpecificMessage())
+	}
 
 	for i := 0; i < len(requiredBank.Accounts); i++ {
-		if requiredBank.Accounts[i].GetAccountNumber() == updatedAccount.GetAccountNumber() {
-			requiredBank.Accounts[i] = updatedAccount
+		if requiredBank.Accounts[i].GetAccountNumber() == updatedAccountTemp.GetAccountNumber() {
+			requiredBank.Accounts[i] = updatedAccountTemp
 			break
 		}
 	}
-	_, requiredCustomer := ReadCustomerById(updatedAccount.GetCustomerId())
 
 	for i := 0; i < len(c.Accounts); i++ {
-		if requiredCustomer.Accounts[i].GetAccountNumber() == updatedAccount.GetAccountNumber() {
-			requiredCustomer.Accounts[i] = updatedAccount
+		if requiredCustomer.Accounts[i].GetAccountNumber() == updatedAccountTemp.GetAccountNumber() {
+			requiredCustomer.Accounts[i] = updatedAccountTemp
 			break
 		}
 	}
+	updatedAccount = updatedAccountTemp
 
 	panic(guru_errors.NewAccountError(guru_errors.UpdatedAccount).GetSpecificMessage())
 }
@@ -422,38 +431,152 @@ func (c *Customer) DeleteAccount(accountIdTemp uuid.UUID) (deletedAccount *guru_
 		}
 	}()
 	if !c.isActive {
-		panic(guru_errors.NewUserError(guru_errors.DeletedUser).GetSpecificMessage())
+		panic(guru_errors.NewUserError(guru_errors.DeletedUserStatus).GetSpecificMessage())
 	}
 
 	requiredAccount := c.ReadAccountById(accountIdTemp)
 	if requiredAccount == nil {
-		panic(guru_errors.NewAccountError(guru_errors.DeletedAccountAlready).GetSpecificMessage())
+		panic(guru_errors.NewAccountError(guru_errors.DeletedAccountStatus).GetSpecificMessage())
 	}
-	deletedAccount = requiredAccount.DeleteAccount()
+	deletedAccountTemp := requiredAccount.DeleteAccount()
 
-	_, requiredBank := guru_bank.ReadBankById(deletedAccount.GetBankId())
+	flag1, requiredBank := guru_bank.ReadBankById(deletedAccountTemp.GetBankId())
+	if !flag1 {
+		panic(guru_errors.NewAccountError(guru_errors.DeletedBankStatus).GetSpecificMessage())
+	}
+	flag2, requiredCustomer := ReadCustomerById(deletedAccountTemp.GetCustomerId())
+	if !flag2 {
+		panic(guru_errors.NewAccountError(guru_errors.DeletedUserStatus).GetSpecificMessage())
+	}
 
 	for i := 0; i < len(requiredBank.Accounts); i++ {
-		if requiredBank.Accounts[i].GetAccountNumber() == deletedAccount.GetAccountNumber() {
-			requiredBank.Accounts[i] = deletedAccount
+		if requiredBank.Accounts[i].GetAccountNumber() == deletedAccountTemp.GetAccountNumber() {
+			requiredBank.Accounts[i] = deletedAccountTemp
 			break
 		}
 	}
-
-	_, requiredCustomer := ReadCustomerById(deletedAccount.GetCustomerId())
 
 	for i := 0; i < len(requiredCustomer.Accounts); i++ {
-		if requiredCustomer.Accounts[i].GetAccountNumber() == deletedAccount.GetAccountNumber() {
-			requiredCustomer.Accounts[i] = deletedAccount
+		if requiredCustomer.Accounts[i].GetAccountNumber() == deletedAccountTemp.GetAccountNumber() {
+			requiredCustomer.Accounts[i] = deletedAccountTemp
 			break
 		}
 	}
 
+	deletedAccount = deletedAccountTemp
 	panic(guru_errors.NewAccountError(guru_errors.DeletedAccount).GetSpecificMessage())
 
 }
 
 // HELPER FUNCTIONS
+
+func (c *Customer) DepositMoney(accountNumberTemp uuid.UUID, amount int) (updatedAccount *guru_account.Account) {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+	if !c.isActive {
+		panic(guru_errors.NewUserError(guru_errors.DeletedUserStatus).GetSpecificMessage())
+	}
+	var requiredAccount *guru_account.Account = c.ReadAccountById(accountNumberTemp)
+	if requiredAccount == nil {
+		panic(guru_errors.NewAccountError(guru_errors.DeletedAccountStatus).GetSpecificMessage())
+	}
+	depositedAccount := requiredAccount.DepositMoney(amount)
+	updatedAccountTemp := c.UpdateAccount(depositedAccount.GetAccountNumber(), "balance", depositedAccount.GetBalance())
+	if updatedAccountTemp == nil {
+		panic(guru_errors.NewAccountError(guru_errors.MoneyDepositedError).GetSpecificMessage())
+	}
+	updatedAccount = updatedAccountTemp
+	panic(guru_errors.NewAccountError(guru_errors.MoneyDeposited).GetSpecificMessage())
+
+}
+
+func (c *Customer) WithdrawMoney(accountNumberTemp uuid.UUID, amount int) (updatedAccount *guru_account.Account) {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+	if !c.isActive {
+		panic(guru_errors.NewUserError(guru_errors.DeletedUserStatus).GetSpecificMessage())
+	}
+	var requiredAccount *guru_account.Account = c.ReadAccountById(accountNumberTemp)
+	if requiredAccount == nil {
+		panic(guru_errors.NewAccountError(guru_errors.DeletedAccountStatus).GetSpecificMessage())
+	}
+
+	if requiredAccount.GetBalance()-amount < 0 {
+		panic(guru_errors.NewAccountError(guru_errors.InSufficientBalance).GetSpecificMessage())
+	}
+	withdrawAccount := requiredAccount.WithdrawMoney(amount)
+
+	updatedAccountTemp := c.UpdateAccount(withdrawAccount.GetAccountNumber(), "balance", withdrawAccount.GetBalance())
+	if updatedAccountTemp == nil {
+		panic(guru_errors.NewAccountError(guru_errors.MoneyWithdrawError).GetSpecificMessage())
+	}
+	updatedAccount = updatedAccountTemp
+	panic(guru_errors.NewAccountError(guru_errors.MoneyWithdraw).GetSpecificMessage())
+}
+
+func (c *Customer) TransferMoney(senderAccountNumber, receiverAccountNumber uuid.UUID, amount int) (updatedSenderAccount *guru_account.Account, updatedReceiverAccount *guru_account.Account) {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+	if !c.isActive {
+		panic(guru_errors.NewUserError(guru_errors.DeletedUserStatus).GetSpecificMessage())
+	}
+	var requiredSenderAccount *guru_account.Account = c.ReadAccountById(senderAccountNumber)
+	var requiredReceiverAccount *guru_account.Account
+
+	for i := 0; i < len(guru_bank.Banks); i++ {
+		for j := 0; j < len(guru_bank.Banks[i].Accounts); j++ {
+			if guru_bank.Banks[i].Accounts[j].GetAccountNumber() == receiverAccountNumber {
+				requiredReceiverAccount = guru_bank.Banks[i].Accounts[j]
+				break
+			}
+		}
+
+	}
+
+	if requiredSenderAccount == nil || requiredReceiverAccount == nil {
+		panic(guru_errors.NewAccountError(guru_errors.DeletedAccountStatus).GetSpecificMessage())
+	}
+	if requiredSenderAccount.GetBalance()-amount < 0 {
+		panic(guru_errors.NewAccountError(guru_errors.InSufficientBalance).GetSpecificMessage())
+	}
+	transferSenderAccount, transferReceiverAccount := requiredSenderAccount.TransferMoney(requiredReceiverAccount, amount)
+
+	flag, requiredReceiverCustomer := ReadCustomerById(requiredReceiverAccount.GetCustomerId())
+	if !flag {
+		panic(guru_errors.NewAccountError(guru_errors.DeletedUserStatus).GetSpecificMessage())
+	}
+	updatedSenderAccountTemp := c.UpdateAccount(transferSenderAccount.GetAccountNumber(), "balance", transferSenderAccount.GetBalance())
+	updatedReceiverAccountTemp := requiredReceiverCustomer.UpdateAccount(transferReceiverAccount.GetAccountNumber(), "balance", transferReceiverAccount.GetBalance())
+
+	if updatedSenderAccountTemp == nil || updatedReceiverAccountTemp == nil {
+		panic(guru_errors.NewAccountError(guru_errors.MoneyTransferedError).GetSpecificMessage())
+	}
+	//
+	flag1, senderBank := guru_bank.ReadBankById(updatedSenderAccountTemp.GetBankId())
+	flag2, receiverBank := guru_bank.ReadBankById(updatedReceiverAccountTemp.GetBankId())
+	if !flag1 {
+		panic(guru_errors.NewAccountError(guru_errors.DeletedBankStatus).GetSpecificMessage())
+	}
+	if !flag2 {
+		panic(guru_errors.NewAccountError(guru_errors.DeletedBankStatus).GetSpecificMessage())
+	}
+	senderBank.SetBankTransferAllMap(receiverBank.GetBankId(), 0-amount)
+	receiverBank.SetBankTransferAllMap(senderBank.GetBankId(), amount)
+	//
+	updatedSenderAccount = updatedSenderAccountTemp
+	updatedReceiverAccount = updatedReceiverAccountTemp
+	panic(guru_errors.NewAccountError(guru_errors.MoneyTransfered).GetSpecificMessage())
+
+}
 
 func ReadCustomerById(customerIdTemp uuid.UUID) (bool, *Customer) {
 	var customer *Customer
@@ -469,31 +592,148 @@ func ReadCustomerById(customerIdTemp uuid.UUID) (bool, *Customer) {
 	return false, customer
 }
 func (c *Customer) GetTotalBalance() (totalBalance int) {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+	if !c.isActive {
+		panic(guru_errors.NewUserError(guru_errors.DeletedUserStatus).GetSpecificMessage())
+	}
+
 	for i := 0; i < len(c.Accounts); i++ {
 		totalBalance += c.Accounts[i].GetBalance()
 	}
-	return totalBalance
+	panic(guru_errors.NewUserError(guru_errors.UserTotalBalance).GetSpecificMessage())
 }
 
-func (c *Customer) GetAllIndividualAccountBalance() map[uuid.UUID]int {
+func (c *Customer) GetAllIndividualAccountBalance() (mapAccountBalance map[uuid.UUID]int) {
 
-	var mapAccountBalance = make(map[uuid.UUID]int, 0)
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+	if !c.isActive {
+		panic(guru_errors.NewUserError(guru_errors.DeletedUserStatus).GetSpecificMessage())
+	}
+
+	mapAccountBalance = make(map[uuid.UUID]int, 0)
 
 	for i := 0; i < len(c.Accounts); i++ {
 		mapAccountBalance[c.Accounts[i].GetAccountNumber()] = c.Accounts[i].GetBalance()
 	}
 
-	return mapAccountBalance
+	panic(guru_errors.NewUserError(guru_errors.UserAccoutBalanceMap).GetSpecificMessage())
 
 }
 
+func (c *Customer) GetNetWorthOfEachBank() (mapBankBalance map[uuid.UUID]int) {
+	defer func() {
+		if a := recover(); a != nil {
+			fmt.Println(a)
+		}
+	}()
+
+	if !c.isAdmin {
+		panic(guru_errors.NewAdminError(guru_errors.NotAdmin).GetSpecificMessage())
+	}
+	if !c.isActive {
+		panic(guru_errors.NewAdminError(guru_errors.DeletedAdmin).GetSpecificMessage())
+	}
+	for i := 0; i < len(guru_bank.Banks); i++ {
+		mapBankBalance[guru_bank.Banks[i].GetBankId()] = guru_bank.Banks[i].GetNetWorthOfBank()
+	}
+
+	panic(guru_errors.NewBankError(guru_errors.BankNetWorthMap).GetSpecificMessage())
+}
+
+func (c *Customer) GetPassbookInRange(accountNumberTemp uuid.UUID, startDate string, endDate string) (requiredPassbookInRange *guru_passbook.Passbook) {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+	if !c.isActive {
+		panic(guru_errors.NewUserError(guru_errors.DeletedUserStatus).GetSpecificMessage())
+	}
+	requiredAccount := c.ReadAccountById(accountNumberTemp)
+	if requiredAccount == nil {
+		panic(guru_errors.NewAccountError(guru_errors.DeletedAccountStatus).GetSpecificMessage())
+	}
+
+	var startDateGoTime time.Time
+	var endDateGoTime time.Time
+
+	if startDate == "" {
+		startDate = "1970-01-01"
+	}
+	if endDate == "" {
+		endDate = time.Now().Format("2006-01-02")
+	}
+	startDateGoTime, _ = time.Parse("2006-01-02", startDate)
+	endDateGoTime, _ = time.Parse("2006-01-02", endDate)
+	requiredPassbookInRange = requiredAccount.GetPassbook(startDateGoTime, endDateGoTime)
+	panic(guru_errors.NewAccountError(guru_errors.PassbookReadInRange).GetSpecificMessage())
+
+}
+
+func (c *Customer) BankTransferAllMapByBankId(bankIdTemp uuid.UUID) (bankTransferAllMapByBankId map[string]int) {
+	defer func() {
+		if a := recover(); a != nil {
+			fmt.Println(a)
+		}
+	}()
+
+	if !c.isAdmin {
+		panic(guru_errors.NewAdminError(guru_errors.NotAdmin).GetSpecificMessage())
+	}
+	if !c.isActive {
+		panic(guru_errors.NewAdminError(guru_errors.DeletedAdmin).GetSpecificMessage())
+	}
+	var requiredBank *guru_bank.Bank = c.ReadBankById(bankIdTemp)
+	if requiredBank == nil {
+		panic(guru_errors.NewBankError(guru_errors.DeletedBankStatus).GetSpecificMessage())
+	}
+
+	var bankTransferAllMapIdBalance map[uuid.UUID]int = requiredBank.GetBankTransferAllMap()
+	for key, value := range bankTransferAllMapIdBalance {
+		bankTransferAllMapByBankId[c.GetBankNameById(key)] = value
+	}
+	panic(guru_errors.NewBankError(guru_errors.ReadBankTransferAllMap).GetSpecificMessage())
+
+}
+
+func (c *Customer) BankTransferAllMapAll() (bankTransferAllMap []map[string]int) {
+	defer func() {
+		if a := recover(); a != nil {
+			fmt.Println(a)
+		}
+	}()
+
+	if !c.isAdmin {
+		panic(guru_errors.NewAdminError(guru_errors.NotAdmin).GetSpecificMessage())
+	}
+	if !c.isActive {
+		panic(guru_errors.NewAdminError(guru_errors.DeletedAdmin).GetSpecificMessage())
+	}
+	for i := 0; i < len(guru_bank.Banks); i++ {
+		bankTransferAllMap = append(bankTransferAllMap, c.BankTransferAllMapByBankId(guru_bank.Banks[i].GetBankId()))
+
+	}
+	panic(guru_errors.NewBankError(guru_errors.ReadBankTransferAllMap).GetSpecificMessage())
+}
+
+func (c *Customer) GetBankNameById(bankIdTemp uuid.UUID) string {
+	return c.ReadBankById(bankIdTemp).GetBankName()
+
+}
 func (c *Customer) GetCustomerId() uuid.UUID {
 	return c.customerId
 }
 func (c *Customer) SetIsActve() {
 	c.isActive = false
 }
-
 func (c *Customer) GetIsActive() bool {
 	return c.isActive
 }
