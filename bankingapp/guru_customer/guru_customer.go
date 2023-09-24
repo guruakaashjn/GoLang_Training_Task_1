@@ -716,7 +716,7 @@ func (c *Customer) BankTransferMapNameBalanceByBankId(bankIdTemp uuid.UUID, from
 	}
 	panic(guru_errors.NewBankError(guru_errors.ReadBankTransferAllMap).GetSpecificMessage())
 }
-func (c *Customer) BankTransferMapNameBalanceAll(fromDate string, toDate string) (bankTransferAllMap []map[string]int) {
+func (c *Customer) BankTransferMapNameBalanceAll(fromDate string, toDate string) (bankTransferAllMap map[string]map[string]int) {
 	defer func() {
 		if a := recover(); a != nil {
 			fmt.Println(a)
@@ -732,7 +732,7 @@ func (c *Customer) BankTransferMapNameBalanceAll(fromDate string, toDate string)
 
 	for i := 0; i < len(guru_bank.Banks); i++ {
 		bankTransferAllMapByBankId := c.BankTransferMapNameBalanceByBankId(guru_bank.Banks[i].GetBankId(), fromDate, toDate)
-		bankTransferAllMap = append(bankTransferAllMap, bankTransferAllMapByBankId)
+		bankTransferAllMap[guru_bank.Banks[i].GetBankName()] = bankTransferAllMapByBankId
 	}
 
 	panic(guru_errors.NewBankError(guru_errors.ReadBankTransferAllMap).GetSpecificMessage())
