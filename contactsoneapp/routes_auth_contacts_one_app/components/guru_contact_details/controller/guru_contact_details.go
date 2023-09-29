@@ -77,14 +77,14 @@ func ReadContactDetailsAll(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(err)
 		}
 	}()
-	fmt.Println("Inside Read Contact Details By Id Controller Function")
+	fmt.Println("Inside Read Contact Details All Controller Function")
 	slugs := mux.Vars(r)
 	var currentUser *user_service.User = user_service.ReadUserById(uuid.MustParse(slugs["user-id"]))
 	if currentUser == nil {
 		json.NewEncoder(w).Encode(guru_errors.ReadContactDetailsFailed)
 		panic(guru_errors.NewContactDetailsError(guru_errors.ReadContactDetailsFailed).GetSpecificMessage())
 	}
-	requiredContactDetailsAll := currentUser.ReadAllContactDetails(uuid.MustParse(slugs["contact-details-id"]))
+	requiredContactDetailsAll := currentUser.ReadAllContactDetails(uuid.MustParse(slugs["contact-id"]))
 
 	json.NewEncoder(w).Encode(requiredContactDetailsAll)
 	panic(guru_errors.NewContactDetailsError(guru_errors.ReadContactDetailsSuccess).GetSpecificMessage())
@@ -126,7 +126,9 @@ func UpdateContactDetailsById(w http.ResponseWriter, r *http.Request) {
 
 func DeleteContactDetailsById(w http.ResponseWriter, r *http.Request) {
 	defer func() {
-
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
 	}()
 	fmt.Println("Inside Delete Contact Details By Id Controller Function")
 	slugs := mux.Vars(r)

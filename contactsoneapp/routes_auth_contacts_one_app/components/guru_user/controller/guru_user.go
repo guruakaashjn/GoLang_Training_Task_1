@@ -44,6 +44,8 @@ func CreateAdmin(w http.ResponseWriter, r *http.Request) {
 		newUserTemp.Password,
 	)
 	json.NewEncoder(w).Encode(newUser)
+	allUsers := userservice.Users
+	json.NewEncoder(w).Encode(allUsers)
 	panic(guru_errors.NewUserError(guru_errors.CreateAdminSuccess).GetSpecificMessage())
 	// fmt.Println("Inside Create Admin Controller Function post request done")
 

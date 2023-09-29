@@ -115,3 +115,24 @@ func NewContactDetailsError(specificMessage string) *contactDetailsError {
 func (e *contactDetailsError) GetSpecificMessage() string {
 	return e.specificMessage
 }
+
+type authenticationError struct {
+	Error           error
+	specificMessage string
+}
+
+const AuthenticationFailed string = "login failed authentication failed"
+const AuthenticationSuccess string = "login success authentication success"
+
+func NewAuthenticationError(specificMessage string) *authenticationError {
+	return &authenticationError{
+		Error:           errors.New("authentication error"),
+		specificMessage: specificMessage,
+	}
+
+	// return newObjectOfInvalidUser
+}
+
+func (e *authenticationError) GetSpecificMessage() string {
+	return e.specificMessage
+}

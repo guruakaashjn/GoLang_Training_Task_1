@@ -2,6 +2,8 @@ package guru_user
 
 import (
 	contact_details_service "contactsoneapp/components/guru_contact_details/service"
+	"contactsoneapp/utils"
+
 	// contacts_details_service "contactsoneapp/components/guru_contact_details/service"
 	contacts_service "contactsoneapp/components/guru_contacts/service"
 	"contactsoneapp/guru_errors"
@@ -29,13 +31,13 @@ func NewUser(FirstName, LastName string, UserName string, Password string, IsAdm
 
 	var ContactsTempList []*contacts_service.Contact = make([]*contacts_service.Contact, 0)
 	// var ContactsTempItem = guru_contacts.NewContact(FirstName, LastName, true, contactType, contactValue)
-
+	HashedPassword, _ := utils.GenerateHash(Password)
 	var newObjectOfUser = &User{
 		UserId:    uuid.New(),
 		FirstName: FirstName,
 		LastName:  LastName,
 		UserName:  UserName,
-		Password:  Password,
+		Password:  string(HashedPassword),
 		IsAdmin:   IsAdmin,
 		IsActive:  true,
 		// Contacts: append(ContactsTempList, ContactsTempItem),
@@ -680,6 +682,29 @@ func ReadUserById(userIdTemp uuid.UUID) (requiredUser *User) {
 	var requiredUserTemp *User
 	for i := 0; i < len(Users); i++ {
 		if Users[i].UserId == userIdTemp {
+			requiredUserTemp = Users[i]
+			break
+		}
+	}
+	if !requiredUserTemp.IsActive {
+		panic(guru_errors.NewUserError(guru_errors.UserDeletedStatus).GetSpecificMessage())
+
+	}
+	requiredUser = requiredUserTemp
+	panic(guru_errors.NewUserError(guru_errors.UserRead).GetSpecificMessage())
+}
+
+func ReadUserByUserName(userNameTemp string) (requiredUser *User) {
+
+	defer func() {
+		if a := recover(); a != nil {
+			fmt.Println(a)
+		}
+	}()
+
+	var requiredUserTemp *User
+	for i := 0; i < len(Users); i++ {
+		if Users[i].UserName == userNameTemp {
 			requiredUserTemp = Users[i]
 			break
 		}

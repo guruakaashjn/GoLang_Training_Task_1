@@ -7,19 +7,19 @@ import (
 // var ContactDetailsId = 3
 
 type ContactDetails struct {
-	contactDetailsId uuid.UUID
+	ContactDetailsId uuid.UUID
 	TypeName         string
 	TypeValue        string
-	isActive         bool
+	IsActive         bool
 }
 
 func NewContactDetails(TypeName string, TypeValue string) *ContactDetails {
 
 	var newObjectOfContactDetails = &ContactDetails{
-		contactDetailsId: uuid.New(),
+		ContactDetailsId: uuid.New(),
 		TypeName:         TypeName,
 		TypeValue:        TypeValue,
-		isActive:         true,
+		IsActive:         true,
 	}
 	return newObjectOfContactDetails
 }
@@ -51,24 +51,24 @@ func (cd *ContactDetails) UpdateContactDetailsObject(contactDetailsTempObj *Cont
 
 // func (cd *ContactDetails) ReadContactDetails() (readContactDetails string) {
 // 	readContactDetails += "Contact Details" +
-// 		"\nContact Details Id: " + cd.contactDetailsId.String() +
+// 		"\nContact Details Id: " + cd.ContactDetailsId.String() +
 // 		"\nType : " + cd.TypeName +
 // 		" and Type Value : " + cd.TypeValue +
-// 		"\nisActive : " + strconv.FormatBool(cd.isActive)
+// 		"\nIsActive : " + strconv.FormatBool(cd.IsActive)
 // 	return readContactDetails
 // }
 
 func (cd *ContactDetails) ReadContactDetails() (bool, *ContactDetails) {
-	if cd.isActive {
+	if cd.IsActive {
 		return true, cd
 	}
 	return false, cd
 }
 
 func (cd *ContactDetails) DeleteContactDetails() *ContactDetails {
-	cd.TypeName = ""
-	cd.TypeValue = ""
-	cd.isActive = false
+	// cd.TypeName = ""
+	// cd.TypeValue = ""
+	cd.IsActive = false
 	return cd
 }
 
@@ -80,5 +80,5 @@ func (cd *ContactDetails) GetTypeValue() string {
 }
 
 func (cd *ContactDetails) GetContactDetailsId() uuid.UUID {
-	return cd.contactDetailsId
+	return cd.ContactDetailsId
 }

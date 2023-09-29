@@ -9,21 +9,21 @@ import (
 // var ContactId int = 2
 
 type Contact struct {
-	contactId       uuid.UUID
-	firstName       string
-	lastName        string
-	isActive        bool
+	ContactId       uuid.UUID
+	FirstName       string
+	LastName        string
+	IsActive        bool
 	Contact_Details []*contact_details_service.ContactDetails
 }
 
-func NewContact(firstName, lastName string, isActive bool) *Contact {
+func NewContact(FirstName, LastName string, IsActive bool) *Contact {
 	ContactDetailsTempList := make([]*contact_details_service.ContactDetails, 0)
 	// contactDetailsTempItem := guru_contact_details.NewContactDetails(contactType, contactValue)
 	var newObjectOfContact = &Contact{
-		contactId: uuid.New(),
-		firstName: firstName,
-		lastName:  lastName,
-		isActive:  isActive,
+		ContactId: uuid.New(),
+		FirstName: FirstName,
+		LastName:  LastName,
+		IsActive:  IsActive,
 		// Contact_Details: append(ContactDetailsTempList, contactDetailsTempItem),
 		Contact_Details: ContactDetailsTempList,
 	}
@@ -32,17 +32,17 @@ func NewContact(firstName, lastName string, isActive bool) *Contact {
 
 }
 
-func CreateContact(firstName, lastName string) *Contact {
-	return NewContact(firstName, lastName, true)
+func CreateContact(FirstName, LastName string) *Contact {
+	return NewContact(FirstName, LastName, true)
 
 }
 
 // func (c *Contact) ReadContact() {
-// 	if c.isActive {
+// 	if c.IsActive {
 // 		fmt.Println("Contact Info")
-// 		fmt.Printf("First Name: %s", c.firstName)
-// 		fmt.Printf("\nLast Name: %s", c.lastName)
-// 		fmt.Printf("\nisActive: %s", "True")
+// 		fmt.Printf("First Name: %s", c.FirstName)
+// 		fmt.Printf("\nLast Name: %s", c.LastName)
+// 		fmt.Printf("\nIsActive: %s", "True")
 // 		for i := 0; i < len(c.Contact_Details); i++ {
 // 			c.Contact_Details[i].ReadContactDetails()
 // 		}
@@ -51,15 +51,15 @@ func CreateContact(firstName, lastName string) *Contact {
 // }
 
 func (c *Contact) GetContactId() uuid.UUID {
-	return c.contactId
+	return c.ContactId
 }
 
 // func (c *Contact) ReadContact() (readContact string) {
 // 	readContact += "Contact Info" +
-// 		"\n Contact Id: " + c.contactId.String() +
-// 		"\nFirst Name : " + c.firstName +
-// 		"\nLast Name : " + c.lastName +
-// 		"\nisActive : " + strconv.FormatBool(c.isActive)
+// 		"\n Contact Id: " + c.ContactId.String() +
+// 		"\nFirst Name : " + c.FirstName +
+// 		"\nLast Name : " + c.LastName +
+// 		"\nIsActive : " + strconv.FormatBool(c.IsActive)
 // 	for i := 0; i < len(c.Contact_Details); i++ {
 // 		readContact += c.Contact_Details[i].ReadContactDetails()
 // 		readContact += "\n"
@@ -71,7 +71,7 @@ func (c *Contact) GetContactId() uuid.UUID {
 // }
 
 func (c *Contact) ReadContact() (bool, *Contact) {
-	if c.isActive {
+	if c.IsActive {
 		return true, c
 	}
 
@@ -84,17 +84,17 @@ func (c *Contact) DeleteContact() *Contact {
 		c.Contact_Details[i].DeleteContactDetails()
 	}
 
-	c.isActive = false
+	c.IsActive = false
 
 	return c
 }
 
 // func (c *Contact) UpdateContact(updateField string, updateValue string) *Contact {
 // 	switch updateField {
-// 	case "firstName":
-// 		c.firstName = updateValue
-// 	case "lastName":
-// 		c.lastName = updateValue
+// 	case "FirstName":
+// 		c.FirstName = updateValue
+// 	case "LastName":
+// 		c.LastName = updateValue
 // 	case "Number", "E-Mail":
 // 		c.updateContactNumberEmail(updateField, updateValue)
 // 	}
@@ -105,18 +105,18 @@ func (c *Contact) DeleteContact() *Contact {
 
 func (c *Contact) UpdateContactObject(contactTempObj *Contact) *Contact {
 
-	if contactTempObj.firstName != "" && contactTempObj.firstName != c.firstName {
-		c.firstName = contactTempObj.firstName
+	if contactTempObj.FirstName != "" && contactTempObj.FirstName != c.FirstName {
+		c.FirstName = contactTempObj.FirstName
 	}
-	if contactTempObj.lastName != "" && contactTempObj.lastName != c.lastName {
-		c.lastName = contactTempObj.lastName
+	if contactTempObj.LastName != "" && contactTempObj.LastName != c.LastName {
+		c.LastName = contactTempObj.LastName
 	}
 
 	// switch updateField {
-	// case "firstName":
-	// 	c.firstName = updateValue
-	// case "lastName":
-	// 	c.lastName = updateValue
+	// case "FirstName":
+	// 	c.FirstName = updateValue
+	// case "LastName":
+	// 	c.LastName = updateValue
 	// case "Number", "E-Mail":
 	// 	c.updateContactNumberEmail(updateField, updateValue)
 	// }
@@ -137,11 +137,11 @@ func (c *Contact) UpdateContactObject(contactTempObj *Contact) *Contact {
 //		}
 //	}
 func (c *Contact) GetFirstName() string {
-	return c.firstName
+	return c.FirstName
 }
 func (c *Contact) GetIsActive() bool {
-	return c.isActive
+	return c.IsActive
 }
 func (c *Contact) GetLastName() string {
-	return c.lastName
+	return c.LastName
 }
