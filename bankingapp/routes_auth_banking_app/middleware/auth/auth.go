@@ -29,7 +29,7 @@ func Sign(claims Claims) (string, error) {
 	return SignedToken, nil
 }
 
-func verify(token string) (*Claims, error) {
+func Verify(token string) (*Claims, error) {
 	var claims = &Claims{}
 	fmt.Println(token)
 
@@ -54,7 +54,7 @@ func IsAdmin(next http.Handler) http.Handler {
 			return
 		}
 		token := cookie.Value
-		payload, err2 := verify(token)
+		payload, err2 := Verify(token)
 		if err2 != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			json.NewEncoder(w).Encode(err2)
@@ -78,7 +78,7 @@ func IsUser(next http.Handler) http.Handler {
 			return
 		}
 		token := cookie.Value
-		payload, err2 := verify(token)
+		payload, err2 := Verify(token)
 		if err2 != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			json.NewEncoder(w).Encode(err2)

@@ -55,6 +55,9 @@ const TotalBalanceSuccess string = "total balance of customer success from custo
 const AccountBalanceListFailed string = "account balance list of customer failed from customer controller"
 const AccountBalanceListSuccess string = "account balance list of customer success from customer controller"
 
+const AdminObjectNotFound string = "admin object not found"
+const AdminObjectFound string = "admin object found successfully"
+
 func NewUserError(specificMessage string) *UserError {
 	return &UserError{
 		errorType:       errors.New("user error"),
