@@ -30,6 +30,9 @@ const UpdateUserSuccess string = "update user success from user controller"
 const DeleteUserFailed string = "delete user failed from user controller"
 const DeleteUserSuccess string = "delete user success from user controller"
 
+const AdminObjectNotFound string = "admin object not found"
+const AdminObjectFound string = "admin object found successfully"
+
 func NewUserError(specificMessage string) *userError {
 	return &userError{
 		Error:           errors.New("invalid user"),

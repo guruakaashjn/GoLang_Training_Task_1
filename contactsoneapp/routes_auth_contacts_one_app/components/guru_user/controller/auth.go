@@ -6,7 +6,6 @@ import (
 	"contactsoneapp/middleware/auth"
 	"contactsoneapp/utils"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -37,7 +36,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if !flag {
 		panic(guru_errors.NewAuthenticationError(guru_errors.AuthenticationFailed).GetSpecificMessage())
 	}
-	fmt.Println(guru_errors.NewAuthenticationError(guru_errors.AuthenticationSuccess).GetSpecificMessage())
+	// fmt.Println(guru_errors.NewAuthenticationError(guru_errors.AuthenticationSuccess).GetSpecificMessage())
 
 	token, err := auth.Sign(*claims)
 	if err != nil {
@@ -50,5 +49,5 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Expires: time.Now().Add(time.Minute * 5),
 	})
 	json.NewEncoder(w).Encode("LoggedIn successfully")
-	fmt.Println(guru_errors.NewAuthenticationError(guru_errors.AuthenticationSuccess).GetSpecificMessage())
+	panic(guru_errors.NewAuthenticationError(guru_errors.AuthenticationSuccess).GetSpecificMessage())
 }
