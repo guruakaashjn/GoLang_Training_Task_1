@@ -18,7 +18,7 @@ type Bank struct {
 	Abbreviation string
 	IsActive     bool
 	Accounts     []*account_service.Account
-	bankPassbook *guru_bank_passbook.BankPassbook
+	BankPassbook *guru_bank_passbook.BankPassbook
 }
 
 func NewBank(FullName string) *Bank {
@@ -33,7 +33,7 @@ func NewBank(FullName string) *Bank {
 		IsActive:     true,
 		Accounts:     initialAccountsList,
 
-		bankPassbook: bankPassbookInitial,
+		BankPassbook: bankPassbookInitial,
 	}
 	Banks = append(Banks, newBankObject)
 	return newBankObject
@@ -159,10 +159,10 @@ func (b *Bank) CheckBankContainsActiveAccounts() bool {
 }
 
 func (b *Bank) GetBankPassbook() *guru_bank_passbook.BankPassbook {
-	return b.bankPassbook
+	return b.BankPassbook
 }
 
 func (b *Bank) ReadPassbookFromRange(fromDate time.Time, toDate time.Time) map[uuid.UUID]int {
 
-	return b.bankPassbook.ReadAllEntries(fromDate, toDate)
+	return b.BankPassbook.ReadAllEntries(fromDate, toDate)
 }

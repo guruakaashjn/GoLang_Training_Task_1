@@ -89,6 +89,7 @@ func (a *Account) SetBalance(Balance int) {
 }
 
 func (a *Account) GetPassbook(startDate, endDate time.Time) *guru_passbook.Passbook {
+	// fmt.Println("Get Passbook Func : ", startDate, "    ", endDate)
 	return a.Passbook.ReadPassbook(startDate, endDate)
 }
 func (a *Account) DepositMoney(amount int) *Account {

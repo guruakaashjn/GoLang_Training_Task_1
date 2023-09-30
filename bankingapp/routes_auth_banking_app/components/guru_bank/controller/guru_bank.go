@@ -25,8 +25,8 @@ var initialAdmin *customer_service.Customer = &customer_service.Customer{
 
 type InputTransaction struct {
 	BankId    string
-	startDate string
-	endDate   string
+	StartDate string
+	EndDate   string
 }
 
 func CreateBank(w http.ResponseWriter, r *http.Request) {
@@ -133,11 +133,27 @@ func NetWorthEachBank(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Inside net worth each bank controller function")
 	netWorthOfEachBank := initialAdmin.GetNetWorthOfEachBank()
 	if netWorthOfEachBank == nil {
-		json.NewEncoder(w).Encode(netWorthOfEachBank)
+		json.NewEncoder(w).Encode(guru_errors.NetWorthEachBankFailed)
 		panic(guru_errors.NewBankError(guru_errors.NetWorthEachBankFailed).GetSpecificMessage())
 	}
 	json.NewEncoder(w).Encode(netWorthOfEachBank)
 	panic(guru_errors.NewBankError(guru_errors.NetWorthEachBankSuccess).GetSpecificMessage())
+}
+func NetWorthGivenBank(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+	fmt.Println("Inside net worth given bank controller function")
+	slugs := mux.Vars(r)
+	netWorthOfGivenBank := initialAdmin.GetNetWorthOfGivenBank(uuid.MustParse(slugs["bank-id"]))
+	if netWorthOfGivenBank == nil {
+		json.NewEncoder(w).Encode(guru_errors.NetWorthGivenBankFailed)
+		panic(guru_errors.NewBankError(guru_errors.NetWorthGivenBankFailed).GetSpecificMessage())
+	}
+	json.NewEncoder(w).Encode(netWorthOfGivenBank)
+	panic(guru_errors.NewBankError(guru_errors.NetWorthGivenBankSuccess).GetSpecificMessage())
 }
 
 func BankNameBalanceMapByBankId(w http.ResponseWriter, r *http.Request) {
@@ -154,10 +170,12 @@ func BankNameBalanceMapByBankId(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(err)
 		panic(guru_errors.NewBankError(guru_errors.BankNameBalanceMapFailed).GetSpecificMessage())
 	}
+	slugs := mux.Vars(r)
+
 	requiredBankBalanceMap := initialAdmin.BankTransferMapNameBalanceByBankId(
-		uuid.MustParse(newInputTransaction.BankId),
-		newInputTransaction.startDate,
-		newInputTransaction.endDate,
+		uuid.MustParse(slugs["bank-id"]),
+		newInputTransaction.StartDate,
+		newInputTransaction.EndDate,
 	)
 	json.NewEncoder(w).Encode(requiredBankBalanceMap)
 	panic(guru_errors.NewBankError(guru_errors.BankNameBalanceMapSuccess).GetSpecificMessage())
@@ -178,8 +196,8 @@ func BankNameBalanceMapAll(w http.ResponseWriter, r *http.Request) {
 		panic(guru_errors.NewBankError(guru_errors.BankNameBalanceMapAllFailed).GetSpecificMessage())
 	}
 	requiredBankBalanceMap := initialAdmin.BankTransferMapNameBalanceAll(
-		newInputTransaction.startDate,
-		newInputTransaction.endDate,
+		newInputTransaction.StartDate,
+		newInputTransaction.EndDate,
 	)
 	json.NewEncoder(w).Encode(requiredBankBalanceMap)
 	panic(guru_errors.NewBankError(guru_errors.BankNameBalanceMapAllSuccess).GetSpecificMessage())

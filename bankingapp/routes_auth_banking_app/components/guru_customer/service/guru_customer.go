@@ -701,6 +701,7 @@ func (c *Customer) GetAllIndividualAccountBalance() (mapAccountBalance map[uuid.
 }
 
 func (c *Customer) GetNetWorthOfEachBank() (mapBankBalance map[uuid.UUID]int) {
+
 	defer func() {
 		if a := recover(); a != nil {
 			fmt.Println(a)
@@ -713,8 +714,33 @@ func (c *Customer) GetNetWorthOfEachBank() (mapBankBalance map[uuid.UUID]int) {
 	if !c.IsActive {
 		panic(guru_errors.NewAdminError(guru_errors.DeletedAdmin).GetSpecificMessage())
 	}
+	mapBankBalance = make(map[uuid.UUID]int, 0)
 	for i := 0; i < len(bank_service.Banks); i++ {
 		mapBankBalance[bank_service.Banks[i].GetBankId()] = bank_service.Banks[i].GetNetWorthOfBank()
+	}
+
+	panic(guru_errors.NewBankError(guru_errors.BankNetWorthMap).GetSpecificMessage())
+}
+
+func (c *Customer) GetNetWorthOfGivenBank(bankIdTemp uuid.UUID) (mapBankBalance map[uuid.UUID]int) {
+
+	defer func() {
+		if a := recover(); a != nil {
+			fmt.Println(a)
+		}
+	}()
+
+	if !c.IsAdmin {
+		panic(guru_errors.NewAdminError(guru_errors.NotAdmin).GetSpecificMessage())
+	}
+	if !c.IsActive {
+		panic(guru_errors.NewAdminError(guru_errors.DeletedAdmin).GetSpecificMessage())
+	}
+	mapBankBalance = make(map[uuid.UUID]int, 0)
+	for i := 0; i < len(bank_service.Banks); i++ {
+		if bank_service.Banks[i].GetBankId() == bankIdTemp {
+			mapBankBalance[bank_service.Banks[i].GetBankId()] = bank_service.Banks[i].GetNetWorthOfBank()
+		}
 	}
 
 	panic(guru_errors.NewBankError(guru_errors.BankNetWorthMap).GetSpecificMessage())
@@ -745,6 +771,8 @@ func (c *Customer) GetPassbookInRange(accountNumberTemp uuid.UUID, startDate str
 	}
 	startDateGoTime, _ = time.Parse("2006-01-02", startDate)
 	endDateGoTime, _ = time.Parse("2006-01-02", endDate)
+
+	// fmt.Println("GetPassbookInRange Func : ", startDateGoTime, "    ", endDateGoTime)
 	requiredPassbookInRange = requiredAccount.GetPassbook(startDateGoTime, endDateGoTime)
 	panic(guru_errors.NewAccountError(guru_errors.PassbookReadInRange).GetSpecificMessage())
 
@@ -781,8 +809,9 @@ func (c *Customer) BankTransferMapNameBalanceByBankId(bankIdTemp uuid.UUID, from
 	toDateGoTime, _ = time.Parse("2006-01-02", toDate)
 
 	bankTransferTemp := requiredBank.ReadPassbookFromRange(fromDateGoTime, toDateGoTime)
+	bankTransferAllMapByBankId = make(map[string]int, 0)
 	for key, value := range bankTransferTemp {
-		bankTransferAllMapByBankId[c.GetBankNameById(key)] = value
+		bankTransferAllMapByBankId[GetBankNameById(key)] = value
 	}
 	panic(guru_errors.NewBankError(guru_errors.ReadBankTransferAllMap).GetSpecificMessage())
 }
@@ -799,7 +828,7 @@ func (c *Customer) BankTransferMapNameBalanceAll(fromDate string, toDate string)
 	if !c.IsActive {
 		panic(guru_errors.NewAdminError(guru_errors.DeletedAdmin).GetSpecificMessage())
 	}
-
+	bankTransferAllMap = make(map[string]map[string]int)
 	for i := 0; i < len(bank_service.Banks); i++ {
 		bankTransferAllMapByBankId := c.BankTransferMapNameBalanceByBankId(bank_service.Banks[i].GetBankId(), fromDate, toDate)
 		bankTransferAllMap[bank_service.Banks[i].GetBankName()] = bankTransferAllMapByBankId
@@ -857,6 +886,16 @@ func (c *Customer) BankTransferMapNameBalanceAll(fromDate string, toDate string)
 func (c *Customer) GetBankNameById(bankIdTemp uuid.UUID) string {
 	return c.ReadBankById(bankIdTemp).GetBankName()
 
+}
+func GetBankNameById(bankIdTemp uuid.UUID) (bankName string) {
+	for i := 0; i < len(bank_service.Banks); i++ {
+		if bank_service.Banks[i].GetBankId() == bankIdTemp {
+			bankName = bank_service.Banks[i].GetBankName()
+			break
+		}
+
+	}
+	return bankName
 }
 func (c *Customer) GetCustomerId() uuid.UUID {
 	return c.CustomerId

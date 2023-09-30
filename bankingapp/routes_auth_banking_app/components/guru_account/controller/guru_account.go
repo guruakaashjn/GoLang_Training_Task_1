@@ -15,8 +15,8 @@ import (
 type InputTransaction struct {
 	AccountNumber string
 	Amount        int
-	startDate     string
-	endDate       string
+	StartDate     string
+	EndDate       string
 }
 
 func CreateAccount(w http.ResponseWriter, r *http.Request) {
@@ -219,7 +219,8 @@ func PassbookPrint(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(guru_errors.TransferFailed)
 		panic(guru_errors.NewAccountError(guru_errors.TransferFailed).GetSpecificMessage())
 	}
-	requiredPassbookInRange := currentCustomer.GetPassbookInRange(uuid.MustParse(newInputTransaction.AccountNumber), newInputTransaction.startDate, newInputTransaction.endDate)
+	// fmt.Println("Passbook PRint Func : ", newInputTransaction.StartDate, "    ", newInputTransaction.EndDate)
+	requiredPassbookInRange := currentCustomer.GetPassbookInRange(uuid.MustParse(slugs["account-id"]), newInputTransaction.StartDate, newInputTransaction.EndDate)
 
 	json.NewEncoder(w).Encode(requiredPassbookInRange)
 	panic(guru_errors.NewAccountError(guru_errors.PassbookSuccess).GetSpecificMessage())

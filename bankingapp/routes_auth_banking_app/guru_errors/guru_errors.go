@@ -146,6 +146,9 @@ const DeleteBankSuccess string = "delete bank success from bank controller"
 
 const NetWorthEachBankFailed string = "networth of each bank failed from bank controller"
 const NetWorthEachBankSuccess string = "networth of each bank success from bank controller"
+const NetWorthGivenBankFailed string = "networth of given bank failed from bank controller"
+const NetWorthGivenBankSuccess string = "networth of given bank success from bank controller"
+
 const BankNameBalanceMapFailed string = "bank name balance corresponding to each bank failed from bank controller"
 const BankNameBalanceMapSuccess string = "bank name balance corresponding to each bank success from bank controller"
 const BankNameBalanceMapAllFailed string = "all bank name balance corresponding to each bank failed from bank controller"
