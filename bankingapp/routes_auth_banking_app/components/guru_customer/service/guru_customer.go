@@ -5,6 +5,7 @@ import (
 	bank_service "bankingapp/components/guru_bank/service"
 	"bankingapp/components/guru_passbook"
 	"bankingapp/guru_errors"
+	"bankingapp/utils"
 	"fmt"
 	"time"
 
@@ -26,12 +27,13 @@ type Customer struct {
 }
 
 func NewCustomer(FirstName, LastName string, UserName, Password string, IsAdmin bool) *Customer {
+	hashedPassword, _ := utils.GenerateHash(Password)
 	var newCustomerObject *Customer = &Customer{
 		CustomerId:   uuid.New(),
 		FirstName:    FirstName,
 		LastName:     LastName,
 		UserName:     UserName,
-		Password:     Password,
+		Password:     string(hashedPassword),
 		TotalBalance: 0,
 		IsAdmin:      IsAdmin,
 		IsActive:     true,
@@ -896,6 +898,29 @@ func GetBankNameById(bankIdTemp uuid.UUID) (bankName string) {
 
 	}
 	return bankName
+}
+
+func ReadCustomerByUserName(customerUserNameTemp string) (requiredCustomer *Customer) {
+	defer func() {
+		if a := recover(); a != nil {
+			fmt.Println(a)
+		}
+	}()
+
+	var requiredCustomerTemp *Customer
+	for i := 0; i < len(Customers); i++ {
+		if Customers[i].UserName == customerUserNameTemp {
+			requiredCustomerTemp = Customers[i]
+			break
+		}
+	}
+	if !requiredCustomerTemp.IsActive {
+		panic(guru_errors.NewUserError(guru_errors.DeletedUserStatus).GetSpecificMessage())
+	}
+	requiredCustomer = requiredCustomerTemp
+
+	panic(guru_errors.NewUserError(guru_errors.ReadUser).GetSpecificMessage())
+
 }
 func (c *Customer) GetCustomerId() uuid.UUID {
 	return c.CustomerId
