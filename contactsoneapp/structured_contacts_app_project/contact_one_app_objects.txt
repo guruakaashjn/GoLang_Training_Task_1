@@ -1,0 +1,26 @@
+{
+	"FirstName": "Jack",
+	"LastName": "Classy",
+	"UserName": "JC12",
+	"Password": "ab12cd34",
+	"IsAdmin": true,
+	"IsActive": true,
+}
+
+{
+	"FirstName": "Oh waah",
+	"LastName": "Nice",
+	"IsActive" : true,
+}
+
+{
+	"TypeName": "Phone",
+	"TypeValue": "9876543210"
+	"IsActive": true
+}
+
+{
+	"TypeName": E-Mail
+	"TypeValue": "abcd@efgh.com"
+	"IsActive": true
+}
