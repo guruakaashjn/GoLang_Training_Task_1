@@ -1,16 +1,16 @@
 package contact
 
 import (
-	"contactsoneapp/models/user"
+	"contactsoneapp/models/contactinfo"
 
 	"github.com/jinzhu/gorm"
 )
 
 type Contact struct {
 	gorm.Model
-	User      user.User
-	UserID    uint
-	FirstName string `json:"FirstName" gorm:"type:varchar(100)"`
-	LastName  string `json:"LastName" gorm:"type:varchar(100)"`
-	IsActive  bool   `json:"IsActive" gorm:"type:boolean;default:false"`
+	UserID       uint
+	FirstName    string                    `json:"FirstName" gorm:"type:varchar(100)"`
+	LastName     string                    `json:"LastName" gorm:"type:varchar(100)"`
+	IsActive     bool                      `json:"IsActive" gorm:"type:boolean;default:false"`
+	ContactInfos []contactinfo.ContactInfo `gorm:"foreignkey:ContactRefer"`
 }

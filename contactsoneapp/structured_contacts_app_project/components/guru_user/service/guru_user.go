@@ -20,7 +20,7 @@ func NewUserService(db *gorm.DB, repo repository.Repository) *UserService {
 	return &UserService{
 		db:           db,
 		repository:   repo,
-		associations: []string{},
+		associations: []string{"Contacts", "Contacts.ContactInfos"},
 	}
 }
 
@@ -50,7 +50,7 @@ func (userService *UserService) CreateUser(newUser *user.User) error {
 func (userService *UserService) GetAllUsers(allUsers *[]user.User, totalCount *int) error {
 	uow := repository.NewUnitOfWork(userService.db, true)
 	defer uow.RollBack()
-	err := userService.repository.GetAll(uow, allUsers)
+	err := userService.repository.GetAll(uow, allUsers, userService.associations)
 	if err != nil {
 		return err
 	}

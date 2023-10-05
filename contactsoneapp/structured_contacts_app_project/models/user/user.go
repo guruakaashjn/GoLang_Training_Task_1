@@ -1,6 +1,10 @@
 package user
 
-import "github.com/jinzhu/gorm"
+import (
+	"contactsoneapp/models/contact"
+
+	"github.com/jinzhu/gorm"
+)
 
 type User struct {
 	gorm.Model
@@ -10,4 +14,5 @@ type User struct {
 	Password  string `json:"Password" gorm:"type:varchar(500)"`
 	IsAdmin   bool   `json:"IsAdmin" gorm:"type:boolean;default:false"`
 	IsActive  bool   `json:"IsActive" gorm:"type:boolean;default:true"`
+	Contacts  []contact.Contact
 }

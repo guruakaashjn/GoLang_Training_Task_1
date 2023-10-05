@@ -19,7 +19,7 @@ func NewContactService(db *gorm.DB, repo repository.Repository) *ContactService 
 	return &ContactService{
 		db:           db,
 		repository:   repo,
-		associations: []string{},
+		associations: []string{"ContactInfos"},
 	}
 }
 
@@ -46,7 +46,7 @@ func (contactService *ContactService) CreateContact(newContact *contact.Contact)
 func (contactService *ContactService) GetAllContacts(allContacts *[]contact.Contact, totalCount *int) error {
 	uow := repository.NewUnitOfWork(contactService.db, true)
 	defer uow.RollBack()
-	err := contactService.repository.GetAll(uow, allContacts)
+	err := contactService.repository.GetAll(uow, allContacts, contactService.associations)
 	if err != nil {
 		return err
 	}

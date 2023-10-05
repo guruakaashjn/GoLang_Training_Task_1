@@ -45,7 +45,7 @@ func (contactDetailsService *ContactDetailsService) CreateContactInfo(newContact
 func (contactDetailsService *ContactDetailsService) GetAllContactDetails(allContactDetails *[]contactinfo.ContactInfo, totalCount *int) error {
 	uow := repository.NewUnitOfWork(contactDetailsService.db, true)
 	defer uow.RollBack()
-	err := contactDetailsService.repository.GetAll(uow, allContactDetails)
+	err := contactDetailsService.repository.GetAll(uow, allContactDetails, contactDetailsService.associations)
 	if err != nil {
 		return err
 	}

@@ -7,7 +7,7 @@ import (
 )
 
 type Repository interface {
-	GetAll(uow *UnitOfWork, out interface{}, queryProcessor ...QueryProcessor) error
+	GetAll(uow *UnitOfWork, out interface{}, associations []string, queryProcessor ...QueryProcessor) error
 	Add(uow *UnitOfWork, out interface{}) error
 	Update(uow *UnitOfWork, out interface{}) error
 	UpdateWithMap(upw *UnitOfWork, model interface{}, value map[string]interface{}, queryProcessors ...QueryProcessor) error
@@ -88,13 +88,19 @@ func executeQueryProcessors(db *gorm.DB, out interface{}, queryProcessors ...Que
 	return db, nil
 }
 
-func (repository *GormRepository) GetAll(uow *UnitOfWork, out interface{}, queryProcessors ...QueryProcessor) error {
+func (repository *GormRepository) GetAll(uow *UnitOfWork, out interface{}, associations []string, queryProcessors ...QueryProcessor) error {
 	db := uow.DB
 	db, err := executeQueryProcessors(db, out, queryProcessors...)
 	if err != nil {
 		return err
 	}
-	return db.Debug().Find(out).Error
+
+	db = db.Debug()
+	for _, association := range associations {
+		db = db.Preload(association)
+	}
+	return db.Find(out).Error
+
 }
 func (repository *GormRepository) GetRecordForId(uow *UnitOfWork, id uint, out interface{}, queryProcessors ...QueryProcessor) error {
 	queryProcessors = append([]QueryProcessor{Filter("id = ?", id)}, queryProcessors...)

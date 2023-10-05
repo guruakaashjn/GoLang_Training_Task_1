@@ -4,13 +4,19 @@
 	"UserName": "JC12",
 	"Password": "ab12cd34",
 	"IsAdmin": true,
-	"IsActive": true,
+	"IsActive": true
 }
-
+{
+	"FirstName": user1
+	"LastName": "1user",
+	"UserName": "user1",
+	"Password": "pass1",
+	"IsActive": true
+}
 {
 	"FirstName": "Oh waah",
 	"LastName": "Nice",
-	"IsActive" : true,
+	"IsActive" : true
 }
 
 {
