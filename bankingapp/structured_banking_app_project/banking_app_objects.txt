@@ -1,0 +1,78 @@
+Admin
+{
+	"FirstName": "Admin1",
+	"LastName": "1Admin",
+	"UserName": "un100",
+	"Password": "pw100",
+}
+Customer
+{
+	"FirstName": "User1",
+	"LastName": "1User",
+	"UserName": "un1",
+	"Password": "pw1",
+}
+
+{
+	"FirstName": "User2",
+	"LastName": "2User",
+	"UserName": "un2",
+	"Password": "pw2",
+}
+
+Bank
+{
+	"FullName": "State Bank of India"	
+}
+
+{
+	"FullName": "Central Bank of India"	
+}
+
+Account
+{
+	"Balance": 40000,
+	"BankId": ,
+	"CustomerId": 
+}
+Account
+{
+	"Balance": 10000,
+	"BankId": ,
+	"CustomerId": 
+}
+Account
+{
+	"Balance": 20000,
+	"BankId": ,
+	"CustomerId": 
+}
+Account
+{
+	"Balance": 30000,
+	"BankId": ,
+	"CustomerId": 
+}
+
+
+Hello Sir
+This is Guru Akaash
+
+preload associations as queryprocessor
+
+middleware to check account number is of the current user or is he using someone else's account number in slugs.
+
+Use UpdateWith inplace of Update in both contactapp and bankingapp
+
+
+
+
+		repository.Table("accounts"),
+		repository.Filter("`bank_id` = ?", requiredBank.ID),
+		repository.Join("join banks on accounts.bank_id = banks.id"),
+		repository.Select("SUM(accounts.balance) AS `balance`, banks.full_name AS `full_name`"),
+		repository.GroupBy("`bank_id`"),
+
+
+
+
