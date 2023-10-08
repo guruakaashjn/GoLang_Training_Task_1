@@ -43,10 +43,13 @@ func (contactService *ContactService) CreateContact(newContact *contact.Contact)
 	uow.Commit()
 	return nil
 }
-func (contactService *ContactService) GetAllContacts(allContacts *[]contact.Contact, totalCount *int) error {
+func (contactService *ContactService) GetAllContacts(allContacts *[]contact.Contact, userIdTemp uint, totalCount *int, limit int, offset int, givenAssociations []string) error {
 	uow := repository.NewUnitOfWork(contactService.db, true)
 	defer uow.RollBack()
-	err := contactService.repository.GetAll(uow, allContacts, contactService.associations)
+
+	requiredAssociations := repository.FilterPreloading(contactService.associations, givenAssociations)
+
+	err := contactService.repository.GetAll(uow, allContacts, repository.Filter("`user_id` =? ", userIdTemp), repository.Paginate(limit, offset, totalCount), repository.Preload(requiredAssociations))
 	if err != nil {
 		return err
 	}
@@ -54,11 +57,12 @@ func (contactService *ContactService) GetAllContacts(allContacts *[]contact.Cont
 	return nil
 }
 
-func (contactService *ContactService) GetContactById(requiredContact *contact.Contact, idTemp int) error {
+func (contactService *ContactService) GetContactById(requiredContact *contact.Contact, userIdTemp uint, idTemp int, givenAssociations []string) error {
 	uow := repository.NewUnitOfWork(contactService.db, true)
 	defer uow.RollBack()
 
-	err := contactService.repository.GetRecordForId(uow, uint(idTemp), requiredContact)
+	requiredAssociations := repository.FilterPreloading(contactService.associations, givenAssociations)
+	err := contactService.repository.GetRecordForId(uow, uint(idTemp), requiredContact, repository.Filter("`user_id` =? ", userIdTemp), repository.Preload(requiredAssociations))
 	if err != nil {
 		return err
 	}

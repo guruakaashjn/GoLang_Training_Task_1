@@ -79,7 +79,10 @@ func (controller *UserController) RegisterUser(w http.ResponseWriter, r *http.Re
 func (controller *UserController) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	allUsers := &[]user.User{}
 	var totalCount int
-	err := controller.service.GetAllUsers(allUsers, &totalCount)
+	limit, offset := web.ParseLimitAndOffset(r)
+	givenAssociations := web.ParsePreloading(r)
+
+	err := controller.service.GetAllUsers(allUsers, &totalCount, limit, offset, givenAssociations)
 	if err != nil {
 		controller.log.Print(err.Error())
 		web.RespondError(w, err)
@@ -98,7 +101,8 @@ func (controller *UserController) GetUserById(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	err = controller.service.GetUserById(&requiredUser, idTemp)
+	givenAssociations := web.ParsePreloading(r)
+	err = controller.service.GetUserById(&requiredUser, idTemp, givenAssociations)
 	if err != nil {
 		controller.log.Print(err.Error())
 		web.RespondError(w, err)

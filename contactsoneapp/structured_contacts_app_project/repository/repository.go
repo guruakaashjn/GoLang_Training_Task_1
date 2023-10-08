@@ -7,7 +7,7 @@ import (
 )
 
 type Repository interface {
-	GetAll(uow *UnitOfWork, out interface{}, associations []string, queryProcessor ...QueryProcessor) error
+	GetAll(uow *UnitOfWork, out interface{}, queryProcessor ...QueryProcessor) error
 	Add(uow *UnitOfWork, out interface{}) error
 	Update(uow *UnitOfWork, out interface{}) error
 	UpdateWithMap(upw *UnitOfWork, model interface{}, value map[string]interface{}, queryProcessors ...QueryProcessor) error
@@ -75,6 +75,64 @@ func Select(query interface{}, args ...interface{}) QueryProcessor {
 	}
 }
 
+func Offset(offset interface{}) QueryProcessor {
+	return func(db *gorm.DB, out interface{}) (*gorm.DB, error) {
+		db = db.Offset(offset)
+		return db, nil
+	}
+}
+
+func Limit(limit interface{}) QueryProcessor {
+	return func(db *gorm.DB, out interface{}) (*gorm.DB, error) {
+		db = db.Limit(limit)
+		return db, nil
+	}
+}
+
+func FilterPreloading(availableAssociations, givenAssociations []string) (requiredAssociations []string) {
+	for _, association := range givenAssociations {
+		for _, availableAssociation := range availableAssociations {
+			if association == availableAssociation {
+				requiredAssociations = append(requiredAssociations, association)
+			}
+		}
+	}
+
+	return requiredAssociations
+
+}
+
+func Preload(preloads interface{}) QueryProcessor {
+	return func(db *gorm.DB, out interface{}) (*gorm.DB, error) {
+
+		for _, preload := range preloads.([]string) {
+			// fmt.Println(preload)
+			db = db.Preload(preload)
+		}
+
+		return db, nil
+	}
+}
+
+func Paginate(limit, offset int, totalCount *int) QueryProcessor {
+	return func(db *gorm.DB, out interface{}) (*gorm.DB, error) {
+		if out != nil {
+			if totalCount != nil {
+				if err := db.Model(out).Count(totalCount).Error; err != nil {
+					return db, err
+				}
+			}
+		}
+		if limit != -1 {
+			db = db.Limit(limit)
+		}
+		if offset > 0 {
+			db = db.Offset(limit * offset)
+		}
+		return db, nil
+	}
+}
+
 func executeQueryProcessors(db *gorm.DB, out interface{}, queryProcessors ...QueryProcessor) (*gorm.DB, error) {
 	var err error
 	for _, query := range queryProcessors {
@@ -88,7 +146,7 @@ func executeQueryProcessors(db *gorm.DB, out interface{}, queryProcessors ...Que
 	return db, nil
 }
 
-func (repository *GormRepository) GetAll(uow *UnitOfWork, out interface{}, associations []string, queryProcessors ...QueryProcessor) error {
+func (repository *GormRepository) GetAll(uow *UnitOfWork, out interface{}, queryProcessors ...QueryProcessor) error {
 	db := uow.DB
 	db, err := executeQueryProcessors(db, out, queryProcessors...)
 	if err != nil {
@@ -96,9 +154,9 @@ func (repository *GormRepository) GetAll(uow *UnitOfWork, out interface{}, assoc
 	}
 
 	db = db.Debug()
-	for _, association := range associations {
-		db = db.Preload(association)
-	}
+	// for _, association := range associations {
+	// 	db = db.Preload(association)
+	// }
 	return db.Find(out).Error
 
 }
@@ -123,7 +181,7 @@ func (repository *GormRepository) Add(uow *UnitOfWork, out interface{}) error {
 
 func (repository *GormRepository) Update(uow *UnitOfWork, out interface{}) error {
 	db := uow.DB
-	db1 := db.Update(out)
+	db1 := db.Model(out).Update(out)
 	return db1.Error
 }
 

@@ -61,8 +61,19 @@ func (controller *ContactInfoController) CreateContactDetails(w http.ResponseWri
 
 func (controller *ContactInfoController) GetAllContactDetails(w http.ResponseWriter, r *http.Request) {
 	allContactDetails := &[]contactinfo.ContactInfo{}
+	slugs := mux.Vars(r)
+	contactIdTemp, err := strconv.Atoi(slugs["contact-id"])
+	if err != nil {
+		controller.log.Print(err)
+		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
+		return
+	}
+
 	var totalCount int
-	err := controller.service.GetAllContactDetails(allContactDetails, &totalCount)
+	limit, offset := web.ParseLimitAndOffset(r)
+	givenAssociations := web.ParsePreloading(r)
+
+	err = controller.service.GetAllContactDetails(allContactDetails, uint(contactIdTemp), &totalCount, limit, offset, givenAssociations)
 	if err != nil {
 		controller.log.Print(err.Error())
 		web.RespondError(w, err)
@@ -74,13 +85,21 @@ func (controller *ContactInfoController) GetAllContactDetails(w http.ResponseWri
 func (controller *ContactInfoController) GetContactDetailsById(w http.ResponseWriter, r *http.Request) {
 	requiredContactDetail := contactinfo.ContactInfo{}
 	slugs := mux.Vars(r)
+	contactIdTemp, err := strconv.Atoi(slugs["contact-id"])
+	if err != nil {
+		controller.log.Print(err)
+		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
+		return
+	}
+
 	idTemp, err := strconv.Atoi(slugs["id"])
 	if err != nil {
 		controller.log.Print(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
-	err = controller.service.GetContactDetailsById(&requiredContactDetail, idTemp)
+	givenAssociations := web.ParsePreloading(r)
+	err = controller.service.GetContactDetailsById(&requiredContactDetail, uint(contactIdTemp), idTemp, givenAssociations)
 	if err != nil {
 		controller.log.Print(err.Error())
 		web.RespondError(w, err)

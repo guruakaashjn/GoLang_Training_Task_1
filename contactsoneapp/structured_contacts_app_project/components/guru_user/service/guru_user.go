@@ -5,6 +5,7 @@ import (
 	"contactsoneapp/repository"
 	"contactsoneapp/utils"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -47,21 +48,27 @@ func (userService *UserService) CreateUser(newUser *user.User) error {
 	uow.Commit()
 	return nil
 }
-func (userService *UserService) GetAllUsers(allUsers *[]user.User, totalCount *int) error {
-	uow := repository.NewUnitOfWork(userService.db, true)
-	defer uow.RollBack()
-	err := userService.repository.GetAll(uow, allUsers, userService.associations)
-	if err != nil {
-		return err
-	}
-	uow.Commit()
-	return nil
-}
-func (userService *UserService) GetUserById(requiredUser *user.User, idTemp int) error {
+func (userService *UserService) GetAllUsers(allUsers *[]user.User, totalCount *int, limit, offset int, givenAssociations []string) error {
 	uow := repository.NewUnitOfWork(userService.db, true)
 	defer uow.RollBack()
 
-	err := userService.repository.GetRecordForId(uow, uint(idTemp), requiredUser)
+	requiredAssociations := repository.FilterPreloading(userService.associations, givenAssociations)
+
+	err := userService.repository.GetAll(uow, allUsers, repository.Paginate(limit, offset, totalCount), repository.Preload(requiredAssociations))
+	if err != nil {
+		return err
+	}
+
+	*totalCount = len(*allUsers)
+	uow.Commit()
+	return nil
+}
+func (userService *UserService) GetUserById(requiredUser *user.User, idTemp int, givenAssociations []string) error {
+	uow := repository.NewUnitOfWork(userService.db, true)
+	defer uow.RollBack()
+
+	requiredAssociations := repository.FilterPreloading(userService.associations, givenAssociations)
+	err := userService.repository.GetRecordForId(uow, uint(idTemp), requiredUser, repository.Preload(requiredAssociations))
 	if err != nil {
 		return err
 	}
@@ -81,10 +88,11 @@ func (userService *UserService) UpdateUser(userToUpdate *user.User) error {
 		return err
 	}
 	userToUpdate.CreatedAt = tempUser.CreatedAt
-	err = userService.repository.Save(uow, userToUpdate)
+	err = userService.repository.Update(uow, userToUpdate)
 	if err != nil {
 		return err
 	}
+	fmt.Println(userToUpdate)
 
 	uow.Commit()
 	return nil

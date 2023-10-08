@@ -42,10 +42,13 @@ func (contactDetailsService *ContactDetailsService) CreateContactInfo(newContact
 	uow.Commit()
 	return nil
 }
-func (contactDetailsService *ContactDetailsService) GetAllContactDetails(allContactDetails *[]contactinfo.ContactInfo, totalCount *int) error {
+func (contactDetailsService *ContactDetailsService) GetAllContactDetails(allContactDetails *[]contactinfo.ContactInfo, contactIdTemp uint, totalCount *int, limit, offset int, givenAssociations []string) error {
 	uow := repository.NewUnitOfWork(contactDetailsService.db, true)
 	defer uow.RollBack()
-	err := contactDetailsService.repository.GetAll(uow, allContactDetails, contactDetailsService.associations)
+
+	requiredAssociations := repository.FilterPreloading(contactDetailsService.associations, givenAssociations)
+
+	err := contactDetailsService.repository.GetAll(uow, allContactDetails, repository.Filter("`contact_refer` =? ", contactIdTemp), repository.Paginate(limit, offset, totalCount), repository.Preload(requiredAssociations))
 	if err != nil {
 		return err
 	}
@@ -53,11 +56,12 @@ func (contactDetailsService *ContactDetailsService) GetAllContactDetails(allCont
 	return nil
 }
 
-func (contactDetailsService *ContactDetailsService) GetContactDetailsById(requiredContactDetails *contactinfo.ContactInfo, idTemp int) error {
+func (contactDetailsService *ContactDetailsService) GetContactDetailsById(requiredContactDetails *contactinfo.ContactInfo, contactIdTemp uint, idTemp int, givenAssociations []string) error {
 	uow := repository.NewUnitOfWork(contactDetailsService.db, true)
 	defer uow.RollBack()
 
-	err := contactDetailsService.repository.GetRecordForId(uow, uint(idTemp), requiredContactDetails)
+	requiredAssociations := repository.FilterPreloading(contactDetailsService.associations, givenAssociations)
+	err := contactDetailsService.repository.GetRecordForId(uow, uint(idTemp), requiredContactDetails, repository.Filter("`contact_refer` =?", contactIdTemp), repository.Preload(requiredAssociations))
 	if err != nil {
 		return err
 	}
