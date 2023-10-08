@@ -1,10 +1,7 @@
 package controller
 
 import (
-	"contactsoneapp/components/guru_user/service"
-	"contactsoneapp/components/log"
 	"contactsoneapp/errors"
-	"contactsoneapp/middleware/auth"
 	"contactsoneapp/models/user"
 	"contactsoneapp/web"
 	"fmt"
@@ -13,31 +10,6 @@ import (
 
 	"github.com/gorilla/mux"
 )
-
-type UserController struct {
-	log     log.Log
-	service *service.UserService
-}
-
-func NewUserController(userService *service.UserService, log log.Log) *UserController {
-	return &UserController{
-		service: userService,
-		log:     log,
-	}
-}
-
-func (controller *UserController) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/admin-priv", controller.RegisterAdmin).Methods(http.MethodPost)
-	router.HandleFunc("/login", controller.Login).Methods(http.MethodPost)
-	userRouter := router.PathPrefix("/user").Subrouter()
-	userRouter.HandleFunc("/", controller.RegisterUser).Methods(http.MethodPost)
-	userRouter.HandleFunc("/", controller.GetAllUsers).Methods(http.MethodGet)
-	userRouter.HandleFunc("/{id}", controller.UpdateUser).Methods(http.MethodPut)
-	userRouter.HandleFunc("/{id}", controller.DeleteUser).Methods(http.MethodDelete)
-	userRouter.HandleFunc("/{id}", controller.GetUserById).Methods(http.MethodGet)
-	userRouter.Use(auth.IsAdmin)
-	fmt.Println("[User register routes]")
-}
 
 func (controller *UserController) RegisterAdmin(w http.ResponseWriter, r *http.Request) {
 	newUser := user.User{}

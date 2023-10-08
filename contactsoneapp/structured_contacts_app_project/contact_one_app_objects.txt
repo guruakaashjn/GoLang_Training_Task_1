@@ -30,3 +30,13 @@
 	"TypeValue": "abcd@efgh.com"
 	"IsActive": true
 }
+
+{
+	"OfferName": "0 balance account",
+}
+
+
+{
+	"OfferName": "10% interest account",
+}
+

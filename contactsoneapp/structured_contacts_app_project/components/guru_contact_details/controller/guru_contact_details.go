@@ -1,11 +1,7 @@
 package controller
 
 import (
-	"contactsoneapp/components/guru_contact_details/service"
-	"contactsoneapp/components/log"
 	"contactsoneapp/errors"
-	"contactsoneapp/middleware/auth"
-	useridtokenuseridverification "contactsoneapp/middleware/userid_token_userid_verification"
 	"contactsoneapp/models/contactinfo"
 	"contactsoneapp/web"
 	"fmt"
@@ -14,30 +10,6 @@ import (
 
 	"github.com/gorilla/mux"
 )
-
-type ContactInfoController struct {
-	log     log.Log
-	service service.ContactDetailsService
-}
-
-func NewContactInfoController(contactDetailsService *service.ContactDetailsService, log log.Log) *ContactInfoController {
-	return &ContactInfoController{
-		service: *contactDetailsService,
-		log:     log,
-	}
-}
-func (controller *ContactInfoController) RegisterRoutes(router *mux.Router) {
-	contactDetailsRouter := router.PathPrefix("/user/{user-id}/contact/{contact-id}/contact-details").Subrouter()
-	contactDetailsRouter.HandleFunc("/", controller.CreateContactDetails).Methods(http.MethodPost)
-	contactDetailsRouter.HandleFunc("/", controller.GetAllContactDetails).Methods(http.MethodGet)
-	contactDetailsRouter.HandleFunc("/{id}", controller.GetContactDetailsById).Methods(http.MethodGet)
-	contactDetailsRouter.HandleFunc("/{id}", controller.UpdateContactDetails).Methods(http.MethodPut)
-	contactDetailsRouter.HandleFunc("/{id}", controller.DeleteContactDetails).Methods(http.MethodDelete)
-	contactDetailsRouter.Use(auth.IsUser)
-	contactDetailsRouter.Use(useridtokenuseridverification.CheckUserVerify)
-	fmt.Println("[Contact Details register routes]")
-
-}
 
 func (controller *ContactInfoController) CreateContactDetails(w http.ResponseWriter, r *http.Request) {
 	newContactDetails := contactinfo.ContactInfo{}
