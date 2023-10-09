@@ -42,7 +42,12 @@ func (controller *ContactInfoController) GetAllContactDetails(w http.ResponseWri
 	}
 
 	var totalCount int
-	limit, offset := web.ParseLimitAndOffset(r)
+	limit, offset, err := web.ParseLimitAndOffset(r)
+	if err != nil {
+		controller.log.Print(err.Error())
+		web.RespondError(w, err)
+	}
+
 	givenAssociations := web.ParsePreloading(r)
 
 	err = controller.service.GetAllContactDetails(allContactDetails, uint(contactIdTemp), &totalCount, limit, offset, givenAssociations)

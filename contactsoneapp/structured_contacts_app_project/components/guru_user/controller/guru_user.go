@@ -51,10 +51,15 @@ func (controller *UserController) RegisterUser(w http.ResponseWriter, r *http.Re
 func (controller *UserController) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	allUsers := &[]user.User{}
 	var totalCount int
-	limit, offset := web.ParseLimitAndOffset(r)
+	limit, offset, err := web.ParseLimitAndOffset(r)
+	if err != nil {
+		controller.log.Print(err.Error())
+		web.RespondError(w, err)
+	}
+
 	givenAssociations := web.ParsePreloading(r)
 
-	err := controller.service.GetAllUsers(allUsers, &totalCount, limit, offset, givenAssociations)
+	err = controller.service.GetAllUsers(allUsers, &totalCount, limit, offset, givenAssociations)
 	if err != nil {
 		controller.log.Print(err.Error())
 		web.RespondError(w, err)

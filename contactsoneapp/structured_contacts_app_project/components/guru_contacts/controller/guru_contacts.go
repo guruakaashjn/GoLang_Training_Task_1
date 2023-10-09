@@ -42,7 +42,12 @@ func (controller *ContactController) GetAllContacts(w http.ResponseWriter, r *ht
 
 	allContacts := &[]contact.Contact{}
 	var totalCount int
-	limit, offset := web.ParseLimitAndOffset(r)
+	limit, offset, err := web.ParseLimitAndOffset(r)
+	if err != nil {
+		controller.log.Print(err.Error())
+		web.RespondError(w, err)
+	}
+
 	givenAssociations := web.ParsePreloading(r)
 
 	err = controller.service.GetAllContacts(allContacts, uint(idTemp), &totalCount, limit, offset, givenAssociations)

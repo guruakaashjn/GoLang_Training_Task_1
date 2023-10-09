@@ -37,31 +37,57 @@ func UnmarshalJSON(request *http.Request, out interface{}) error {
 
 }
 
-func ParseLimitAndOffset(request *http.Request) (limit int, offset int) {
+func ParseLimitAndOffset(request *http.Request) (limit int, offset int, err error) {
+
 	limitGiven := request.URL.Query().Get("limit")
 	offsetGiven := request.URL.Query().Get("offset")
 
-	limit, err := strconv.Atoi(limitGiven)
-	if err != nil {
-		fmt.Println("Invalid limit, default limit chosen")
-		limit = 5
+	limit, err1 := parseLimit(limitGiven)
+	offset, err2 := parseOffset(offsetGiven)
 
+	if err1 != nil || err2 != nil {
+		return 0, 0, errors.NewValidationError(err1.Error() + " " + err2.Error())
+	}
+	return limit, offset, nil
+
+}
+
+func parseLimit(limitGiven string) (limit int, err error) {
+	if limitGiven == "" {
+		limit = 5
+		return limit, nil
+	}
+
+	limit, err = strconv.Atoi(limitGiven)
+	if err != nil {
+		// fmt.Println("Invalid limit, default limit chosen")
+		// limit = 5
+		return 0, errors.NewValidationError("Invalid limit provided")
+	}
+	if limit < 0 {
+		return 0, errors.NewValidationError("Limit cannot be negative")
+	}
+	if limit > 10 {
+		return 0, errors.NewValidationError("Limit chosen is too large")
+	}
+	return limit, nil
+}
+
+func parseOffset(offsetGiven string) (offset int, err error) {
+	if offsetGiven == "" {
+		offset = 0
+		return offset, nil
 	}
 	offset, err1 := strconv.Atoi(offsetGiven)
 	if err1 != nil {
-		fmt.Println("Invalid offset, default offset chosen")
-		offset = 0
-	}
-
-	if limit < 0 {
-		fmt.Println("Invalid limit, default limit chosen")
-		limit = 5
+		// fmt.Println("Invalid offset, default offset chosen")
+		// offset = 0
+		return 0, errors.NewValidationError("Invalid offset provided")
 	}
 	if offset < 0 {
-		fmt.Println("Invalid offset, default offset chosen")
-		offset = 0
+		return 0, errors.NewValidationError("Offset cannot be negative")
 	}
-	return limit, offset
+	return offset, nil
 
 }
 
