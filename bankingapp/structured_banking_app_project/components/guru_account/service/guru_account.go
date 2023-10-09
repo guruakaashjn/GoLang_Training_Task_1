@@ -416,7 +416,11 @@ func (accountService *AccountService) PassbookPrint(requiredAccount *account.Acc
 		return err
 
 	}
-	err = accountService.repository.GetAll(uow, requiredEntries, repository.Paginate(limit, offset, totalCount), repository.Filter("`passbook_id` =?", requiredPassbook.ID), repository.Filter("`created_at` >= ? AND `created_at` <= ?", startDateTimeDotTime, endDateTimeDotTime))
+	err = accountService.repository.GetAll(uow, requiredEntries,
+		repository.Paginate(limit, offset, totalCount),
+		repository.Filter("`passbook_id` =?", requiredPassbook.ID),
+		repository.Filter("`created_at` >= ? AND `created_at` <= ?", startDateTimeDotTime, endDateTimeDotTime),
+	)
 	if err != nil {
 		return err
 
@@ -480,6 +484,10 @@ func (accountService *AccountService) TakeAvailableOffer(requiredAccount *accoun
 	err = accountService.repository.GetRecordForId(uow, takeOffer.ID, takeOffer)
 	if err != nil {
 		return nil
+	}
+
+	if takeOffer.BankID != requiredAccount.BankID {
+		return errors.New("please provide proper offer id of your bank only")
 	}
 
 	requiredAccount.Offers = append(requiredAccount.Offers, *takeOffer)

@@ -28,7 +28,7 @@ func (controller *BankController) RegisterRoutes(router *mux.Router) {
 	bankRouter.HandleFunc("/", controller.GetAllBanks).Methods(http.MethodGet)
 
 	bankRouter.HandleFunc("/all-bank-networth", controller.AllBankNetWorth).Methods(http.MethodGet)
-	bankRouter.HandleFunc("/all-bank-balance-map", controller.AllBankBalanceMap).Methods("GET")
+	bankRouter.HandleFunc("/all-bank-balance-map", controller.AllBankBalanceMap).Methods(http.MethodGet)
 
 	bankRouter.HandleFunc("/{id}", controller.UpdateBank).Methods(http.MethodPut)
 	bankRouter.HandleFunc("/{id}", controller.DeleteBank).Methods(http.MethodDelete)

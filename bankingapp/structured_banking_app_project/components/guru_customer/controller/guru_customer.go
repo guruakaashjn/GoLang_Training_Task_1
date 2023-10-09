@@ -3,6 +3,7 @@ package controller
 import (
 	"bankingapp/errors"
 	"bankingapp/models/customer"
+	"bankingapp/utils"
 	"bankingapp/web"
 	"fmt"
 	"net/http"
@@ -15,7 +16,8 @@ func (controller *CustomerController) RegisterAdmin(w http.ResponseWriter, r *ht
 	newAdmin := customer.Customer{}
 	err := web.UnmarshalJSON(r, &newAdmin)
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -23,7 +25,8 @@ func (controller *CustomerController) RegisterAdmin(w http.ResponseWriter, r *ht
 	newAdmin.IsAdmin = true
 	err = controller.service.CreateCustomer(&newAdmin)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 	}
 	web.RespondJSON(w, http.StatusCreated, newAdmin)
@@ -34,14 +37,16 @@ func (controller *CustomerController) RegisterCustomer(w http.ResponseWriter, r 
 	newCustomer := customer.Customer{}
 	err := web.UnmarshalJSON(r, &newCustomer)
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
 	newCustomer.IsAdmin = false
 	err = controller.service.CreateCustomer(&newCustomer)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 	}
 	web.RespondJSON(w, http.StatusCreated, newCustomer)
@@ -50,16 +55,31 @@ func (controller *CustomerController) RegisterCustomer(w http.ResponseWriter, r 
 func (controller *CustomerController) GetAllCustomers(w http.ResponseWriter, r *http.Request) {
 	allCustomers := &[]customer.Customer{}
 	var totalCount int
-	limit, offset := web.ParseLimitAndOffset(r)
+	limit, offset, err := web.ParseLimitAndOffset(r)
+	if err != nil {
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
+		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
+		return
+	}
 	givenAssociations := web.ParsePreloading(r)
 
-	err := controller.service.GetAllCustomers(allCustomers, &totalCount, limit, offset, givenAssociations)
+	columnNames, conditiond, operators, values := web.ParseForLike(r)
+
+	err = controller.service.GetAllCustomers(allCustomers, &totalCount, limit, offset, givenAssociations, columnNames, conditiond, operators, values)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}
-	web.RespondJSONWithXTotalCount(w, http.StatusOK, totalCount, allCustomers)
+	allCustomersDTO := []customer.CustomerDTO{}
+	for _, customerObj := range *allCustomers {
+		customerDTOObj := customer.CustomerDTO{}
+		utils.ConvertUserObjectToDTOObject(&customerObj, &customerDTOObj)
+		allCustomersDTO = append(allCustomersDTO, customerDTOObj)
+	}
+	web.RespondJSONWithXTotalCount(w, http.StatusOK, totalCount, allCustomersDTO)
 }
 
 func (controller *CustomerController) GetCustomerById(w http.ResponseWriter, r *http.Request) {
@@ -68,7 +88,8 @@ func (controller *CustomerController) GetCustomerById(w http.ResponseWriter, r *
 	slugs := mux.Vars(r)
 	idTemp, err := strconv.Atoi(slugs["id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -77,7 +98,8 @@ func (controller *CustomerController) GetCustomerById(w http.ResponseWriter, r *
 	err = controller.service.GetCustomerById(&requiredCustomer, idTemp, givenAssociations)
 
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}
@@ -92,7 +114,8 @@ func (controller *CustomerController) UpdateCustomer(w http.ResponseWriter, r *h
 	err := web.UnmarshalJSON(r, &customerToUpdate)
 	if err != nil {
 		fmt.Println("error from unmarshal JSON")
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -100,7 +123,8 @@ func (controller *CustomerController) UpdateCustomer(w http.ResponseWriter, r *h
 
 	intID, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -111,7 +135,8 @@ func (controller *CustomerController) UpdateCustomer(w http.ResponseWriter, r *h
 	err = controller.service.UpdateCustomer(&customerToUpdate)
 
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}
@@ -125,14 +150,16 @@ func (controller *CustomerController) DeleteCustomer(w http.ResponseWriter, r *h
 	slugs := mux.Vars(r)
 	intId, err := strconv.Atoi(slugs["id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
 	customerToDelete.ID = uint(intId)
 	err = controller.service.DeleteCustomer(&customerToDelete)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}
@@ -146,7 +173,8 @@ func (controller *CustomerController) TotalBalance(w http.ResponseWriter, r *htt
 
 	idTemp, err := strconv.Atoi(slugs["id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -155,7 +183,8 @@ func (controller *CustomerController) TotalBalance(w http.ResponseWriter, r *htt
 	err = controller.service.TotalBalance(requiredCustomer, &totalBalance)
 	// fmt.Println(totalBalance)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}
@@ -169,7 +198,8 @@ func (controller *CustomerController) AccountBalanceList(w http.ResponseWriter, 
 
 	idTemp, err := strconv.Atoi(slugs["id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -178,7 +208,8 @@ func (controller *CustomerController) AccountBalanceList(w http.ResponseWriter, 
 	var mapAccountBalance = make(map[uint]int, 0)
 	err = controller.service.AccountBalanceList(requiredCustomer, mapAccountBalance)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}

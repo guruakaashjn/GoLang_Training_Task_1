@@ -31,9 +31,11 @@ func (controller *CustomerController) RegisterRoutes(router *mux.Router) {
 	customerRouter.HandleFunc("/{id}", controller.UpdateCustomer).Methods(http.MethodPut)
 	customerRouter.HandleFunc("/{id}", controller.DeleteCustomer).Methods(http.MethodDelete)
 	customerRouter.HandleFunc("/{id}", controller.GetCustomerById).Methods(http.MethodGet)
-	customerRouter.HandleFunc("/{id}/total-balance", controller.TotalBalance).Methods(http.MethodGet)
-	customerRouter.HandleFunc("/{id}/account-balance-list", controller.AccountBalanceList).Methods(http.MethodGet)
+	unguidedRouter := router.PathPrefix("/customer").Subrouter()
+	unguidedRouter.HandleFunc("/{id}/total-balance", controller.TotalBalance).Methods(http.MethodGet)
+	unguidedRouter.HandleFunc("/{id}/account-balance-list", controller.AccountBalanceList).Methods(http.MethodGet)
 	customerRouter.Use(auth.IsAdmin)
+	unguidedRouter.Use(auth.IsUser)
 
 	fmt.Println("[Customer register routes]")
 }

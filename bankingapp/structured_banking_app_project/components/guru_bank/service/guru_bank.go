@@ -91,7 +91,7 @@ func (bankService *BankService) GetAllBanks(allBanks *[]bank.Bank, totalCount *i
 		return err
 	}
 
-	*totalCount = len(*allBanks)
+	// *totalCount = len(*allBanks)
 	uow.Commit()
 	return nil
 }
@@ -239,7 +239,7 @@ type BankBankPassbookBankEntryJoin struct {
 	bank_entry.BankEntry
 }
 
-func (bankService *BankService) BankBalanceMap(requiredBank *bank.Bank, mapBankBalance map[string]map[string]int) error {
+func (bankService *BankService) BankBalanceMap(requiredBank *bank.Bank, mapBankBalance map[string]map[string]int, startDateTimeDotTime, endDateTimeDotTime time.Time) error {
 	err := bankService.doesBankExist(requiredBank.ID)
 	if err != nil {
 		return err
@@ -252,10 +252,11 @@ func (bankService *BankService) BankBalanceMap(requiredBank *bank.Bank, mapBankB
 	err = bankService.repository.GetAll(uow, entries,
 		repository.Table("banks"),
 		repository.Filter("banks.id = ?", requiredBank.ID),
+
 		repository.Join("join bank_passbooks on banks.id = bank_passbooks.bank_id"),
 		repository.Join("join bank_entries on bank_entries.bank_passbook_id = bank_passbooks.id"),
-
 		repository.Select("banks.id AS `id`, banks.full_name AS `full_name`,bank_entries.amount AS `amount`, bank_entries.from_bank AS `from_bank`, bank_entries.to_bank AS `to_bank`, bank_entries.created_at AS `created_at`, bank_entries.transaction_type AS `transaction_type`"),
+		repository.Filter("bank_entries.created_at >= ? AND bank_entries.created_at <= ?", startDateTimeDotTime, endDateTimeDotTime),
 	)
 	if err != nil {
 		return err
@@ -306,7 +307,7 @@ func (bankService *BankService) BankBalanceMap(requiredBank *bank.Bank, mapBankB
 	return nil
 }
 
-func (bankService *BankService) AllBankBalanceMap(allMapBankBalance *[]map[string]map[string]int) error {
+func (bankService *BankService) AllBankBalanceMap(allMapBankBalance *[]map[string]map[string]int, startDateTimeDotTime, endDateTimeDotTime time.Time) error {
 
 	uow := repository.NewUnitOfWork(bankService.db, false)
 	defer uow.RollBack()
@@ -325,10 +326,11 @@ func (bankService *BankService) AllBankBalanceMap(allMapBankBalance *[]map[strin
 			return err
 		}
 		mapBankBalance := make(map[string]map[string]int)
-		bankService.BankBalanceMap(requiredBank, mapBankBalance)
+		bankService.BankBalanceMap(requiredBank, mapBankBalance, startDateTimeDotTime, endDateTimeDotTime)
 		*allMapBankBalance = append(*allMapBankBalance, mapBankBalance)
 	}
-	fmt.Println(allMapBankBalance)
+
+	// fmt.Println(allMapBankBalance)
 
 	uow.Commit()
 	return nil

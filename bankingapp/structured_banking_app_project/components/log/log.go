@@ -1,6 +1,9 @@
 package log
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type Logger interface {
 	Print(value ...string)
@@ -13,4 +16,8 @@ func GetLogger() *Log {
 
 func (l *Log) Print(value ...interface{}) {
 	fmt.Println(value)
+}
+
+func (l *Log) PrintError(er error) {
+	fmt.Println("ERROR : ", er, " at : ", time.Now())
 }

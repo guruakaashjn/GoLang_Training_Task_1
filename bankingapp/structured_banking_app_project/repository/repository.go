@@ -2,6 +2,7 @@ package repository
 
 import (
 	"bankingapp/errors"
+	"fmt"
 
 	"github.com/jinzhu/gorm"
 )
@@ -199,6 +200,49 @@ func Offset(offset interface{}) QueryProcessor {
 func Limit(limit interface{}) QueryProcessor {
 	return func(db *gorm.DB, out interface{}) (*gorm.DB, error) {
 		db = db.Limit(limit)
+		return db, nil
+	}
+}
+
+func FilterWithOperator(columnNames []string, conditions []string, operators []string, values []interface{}) QueryProcessor {
+	return func(db *gorm.DB, out interface{}) (*gorm.DB, error) {
+
+		if len(columnNames) != len(conditions) && len(conditions) != len(values) {
+			return db, nil
+		}
+
+		if len(conditions) == 1 {
+			if values[0] == nil {
+				db = db.Where(fmt.Sprintf("%v %v", columnNames[0], conditions[0]))
+				return db, nil
+			}
+			db = db.Where(fmt.Sprintf("%v %v", columnNames[0], conditions[0]), values[0])
+			return db, nil
+		}
+		if len(columnNames)-1 != len(operators) {
+			return db, nil
+		}
+
+		str := ""
+		nums := []int{}
+		for index := 0; index < len(columnNames); index++ {
+			if values[index] == nil {
+				nums = append(nums, index)
+			}
+			if index == len(columnNames)-1 {
+				str = fmt.Sprintf("%v%v %v", str, columnNames[index], conditions[index])
+			} else {
+				str = fmt.Sprintf("%v%v %v %v ", str, columnNames[index], conditions[index], operators[index])
+			}
+		}
+		for ind, num := range nums {
+			values = append(values[:num], values[num+1:]...)
+			for i := ind; i < len(nums); i++ {
+				// This is done to adjust indexes because we sliced.
+				nums[i] = nums[i] - 1
+			}
+		}
+		db = db.Where(str, values...)
 		return db, nil
 	}
 }

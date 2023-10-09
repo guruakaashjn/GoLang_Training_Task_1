@@ -22,7 +22,8 @@ func (controller *AccountController) CreateAccount(w http.ResponseWriter, r *htt
 	newAccount := account.Account{}
 	err := web.UnmarshalJSON(r, &newAccount)
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -32,7 +33,8 @@ func (controller *AccountController) CreateAccount(w http.ResponseWriter, r *htt
 	newAccount.CustomerID = uint(idTemp)
 	err = controller.service.CreateAccount(&newAccount)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 	}
 	web.RespondJSON(w, http.StatusCreated, newAccount)
@@ -42,18 +44,26 @@ func (controller *AccountController) GetAllAccounts(w http.ResponseWriter, r *ht
 	slugs := mux.Vars(r)
 	idTemp, err := strconv.Atoi(slugs["customer-id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
-	limit, offset := web.ParseLimitAndOffset(r)
+	limit, offset, err := web.ParseLimitAndOffset(r)
+	if err != nil {
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
+		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
+		return
+	}
 	givenAssociations := web.ParsePreloading(r)
 
 	allAccounts := &[]account.Account{}
 	var totalCount int
 	err = controller.service.GetAllAccounts(allAccounts, &totalCount, uint(idTemp), limit, offset, givenAssociations)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}
@@ -65,14 +75,16 @@ func (controller *AccountController) GetAccountById(w http.ResponseWriter, r *ht
 	slugs := mux.Vars(r)
 	customerIdTemp, err := strconv.Atoi(slugs["customer-id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
 
 	idTemp, err := strconv.Atoi(slugs["id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -82,7 +94,8 @@ func (controller *AccountController) GetAccountById(w http.ResponseWriter, r *ht
 
 	err = controller.service.GetAccountById(&requiredAccount, givenAssociations)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}
@@ -96,7 +109,8 @@ func (controller *AccountController) UpdateAccount(w http.ResponseWriter, r *htt
 	err := web.UnmarshalJSON(r, &accountToUpdate)
 	if err != nil {
 		fmt.Println("error from UnMarshalJSON")
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -104,7 +118,8 @@ func (controller *AccountController) UpdateAccount(w http.ResponseWriter, r *htt
 	slugs := mux.Vars(r)
 	intId, err := strconv.Atoi(slugs["id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -116,7 +131,8 @@ func (controller *AccountController) UpdateAccount(w http.ResponseWriter, r *htt
 	fmt.Println(&accountToUpdate)
 	err = controller.service.UpdateAccount(&accountToUpdate)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}
@@ -130,7 +146,8 @@ func (controller *AccountController) DeleteAccount(w http.ResponseWriter, r *htt
 	slugs := mux.Vars(r)
 	intID, err := strconv.Atoi(slugs["id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -138,7 +155,8 @@ func (controller *AccountController) DeleteAccount(w http.ResponseWriter, r *htt
 	accountToDelete.ID = uint(intID)
 	err = controller.service.DeleteAccount(&accountToDelete)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}
@@ -151,7 +169,8 @@ func (controller *AccountController) TransferMoney(w http.ResponseWriter, r *htt
 	slugs := mux.Vars(r)
 	intID, err := strconv.Atoi(slugs["id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -163,7 +182,8 @@ func (controller *AccountController) TransferMoney(w http.ResponseWriter, r *htt
 	err = web.UnmarshalJSON(r, &inputTransaction)
 	if err != nil {
 		fmt.Println("error from UnMarshalJSON")
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -174,7 +194,8 @@ func (controller *AccountController) TransferMoney(w http.ResponseWriter, r *htt
 
 	err = controller.service.TransferMoney(&senderAccount, &receiverAccount, amount)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}
@@ -188,7 +209,8 @@ func (controller *AccountController) DepositMoney(w http.ResponseWriter, r *http
 	intID, err := strconv.Atoi(slugs["id"])
 	fmt.Println("--------------------------------------------------1-----------------------------------")
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -201,7 +223,8 @@ func (controller *AccountController) DepositMoney(w http.ResponseWriter, r *http
 	err = web.UnmarshalJSON(r, &inputTransaction)
 	if err != nil {
 		fmt.Println("error from UnMarshalJSON")
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -209,7 +232,8 @@ func (controller *AccountController) DepositMoney(w http.ResponseWriter, r *http
 
 	err = controller.service.DepositMoney(&senderAccount, amount)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}
@@ -221,7 +245,8 @@ func (controller *AccountController) WithdrawMoney(w http.ResponseWriter, r *htt
 	slugs := mux.Vars(r)
 	intID, err := strconv.Atoi(slugs["id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -233,7 +258,8 @@ func (controller *AccountController) WithdrawMoney(w http.ResponseWriter, r *htt
 	err = web.UnmarshalJSON(r, &inputTransaction)
 	if err != nil {
 		fmt.Println("error from UnMarshalJSON")
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -241,7 +267,8 @@ func (controller *AccountController) WithdrawMoney(w http.ResponseWriter, r *htt
 
 	err = controller.service.WithdrawMoney(&senderAccount, amount)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}
@@ -251,24 +278,38 @@ func (controller *AccountController) WithdrawMoney(w http.ResponseWriter, r *htt
 func (controller *AccountController) PassbookPrint(w http.ResponseWriter, r *http.Request) {
 
 	requiredAccount := &account.Account{}
-	limit, offset := web.ParseLimitAndOffset(r)
+	limit, offset, err := web.ParseLimitAndOffset(r)
+	if err != nil {
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
+		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
+		return
+	}
+	startDateTimeDotTime, endDateTimeDotTime, err := web.ParseStartDateEndDate(r)
+	if err != nil {
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
+		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
+		return
+	}
+
 	var totalCount int
 	slugs := mux.Vars(r)
 	idTemp, err := strconv.Atoi(slugs["id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
 	requiredAccount.ID = uint(idTemp)
 
-	startDateTimeDotTime, endDateTimeDotTime := web.ParseStartDateEndDate(r)
-
 	// fmt.Println(startDate, "    ", endDate)
 	requiredEntries := &[]entry.Entry{}
 	err = controller.service.PassbookPrint(requiredAccount, startDateTimeDotTime, endDateTimeDotTime, requiredEntries, limit, offset, &totalCount)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}
@@ -281,14 +322,16 @@ func (controller *AccountController) GetAvailableOffers(w http.ResponseWriter, r
 	slugs := mux.Vars(r)
 	customerIdTemp, err := strconv.Atoi(slugs["customer-id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
 
 	idTemp, err := strconv.Atoi(slugs["id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -303,7 +346,8 @@ func (controller *AccountController) GetAvailableOffers(w http.ResponseWriter, r
 
 	// err = controller.service.GetAccountById(&requiredAccount, givenAssociations)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}
@@ -314,14 +358,16 @@ func (controller *AccountController) TakeAvailableOffer(w http.ResponseWriter, r
 	slugs := mux.Vars(r)
 	customerIdTemp, err := strconv.Atoi(slugs["customer-id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
 
 	idTemp, err := strconv.Atoi(slugs["id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -333,7 +379,8 @@ func (controller *AccountController) TakeAvailableOffer(w http.ResponseWriter, r
 	err = web.UnmarshalJSON(r, &takeAvailableOffer)
 	if err != nil {
 		fmt.Println("error from unmarshal JSON")
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -346,7 +393,8 @@ func (controller *AccountController) TakeAvailableOffer(w http.ResponseWriter, r
 
 	// err = controller.service.GetAccountById(&requiredAccount, givenAssociations)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}
@@ -357,14 +405,16 @@ func (controller *AccountController) ChosenOffers(w http.ResponseWriter, r *http
 	slugs := mux.Vars(r)
 	customerIdTemp, err := strconv.Atoi(slugs["customer-id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
 
 	idTemp, err := strconv.Atoi(slugs["id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -379,7 +429,8 @@ func (controller *AccountController) ChosenOffers(w http.ResponseWriter, r *http
 
 	// err = controller.service.GetAccountById(&requiredAccount, givenAssociations)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}

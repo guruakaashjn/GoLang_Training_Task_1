@@ -6,6 +6,7 @@ drop database bankingapp;
 show tables;
 
 SELECT * from customers;
+DELETE from customers where id = 4;
 SELECT * from banks;
 SELECT * from accounts;
 DELETE from accounts where id = 1 OR id = 2;

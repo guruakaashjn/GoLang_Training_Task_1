@@ -14,7 +14,8 @@ func (controller *OfferController) RegisterOffer(w http.ResponseWriter, r *http.
 	newOffer := offer.Offer{}
 	err := web.UnmarshalJSON(r, &newOffer)
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -24,7 +25,8 @@ func (controller *OfferController) RegisterOffer(w http.ResponseWriter, r *http.
 	newOffer.BankID = uint(idTemp)
 	err = controller.service.RegisterOffer(&newOffer)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 	}
 	web.RespondJSON(w, http.StatusCreated, newOffer)
@@ -34,18 +36,26 @@ func (controller *OfferController) GetAllOffers(w http.ResponseWriter, r *http.R
 	slugs := mux.Vars(r)
 	idTemp, err := strconv.Atoi(slugs["bank-id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
-	limit, offset := web.ParseLimitAndOffset(r)
+	limit, offset, err := web.ParseLimitAndOffset(r)
+	if err != nil {
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
+		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
+		return
+	}
 	givenAssociations := web.ParsePreloading(r)
 
 	allOffers := &[]offer.Offer{}
 	var totalCount int
 	err = controller.service.GetAllOffers(allOffers, uint(idTemp), &totalCount, limit, offset, givenAssociations)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}
@@ -56,14 +66,16 @@ func (controller *OfferController) GetOfferById(w http.ResponseWriter, r *http.R
 	slugs := mux.Vars(r)
 	bankIdTemp, err := strconv.Atoi(slugs["bank-id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
 
 	idTemp, err := strconv.Atoi(slugs["id"])
 	if err != nil {
-		controller.log.Print(err)
+		// controller.log.Print(err)
+		controller.log.PrintError(err)
 		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
 		return
 	}
@@ -73,7 +85,8 @@ func (controller *OfferController) GetOfferById(w http.ResponseWriter, r *http.R
 
 	err = controller.service.GetOfferById(&requiredOffer, givenAssociations)
 	if err != nil {
-		controller.log.Print(err.Error())
+		// controller.log.Print(err.Error())
+		controller.log.PrintError(err)
 		web.RespondError(w, err)
 		return
 	}

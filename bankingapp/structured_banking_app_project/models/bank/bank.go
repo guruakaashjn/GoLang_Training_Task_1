@@ -17,3 +17,12 @@ type Bank struct {
 	BankPassbook bank_passbook.BankPassbook
 	Offers       []offer.Offer
 }
+
+type BankDTO struct {
+	FullName     string `json:"FullName" gorm:"type:varchar(100)"`
+	Abbreviation string `json:"Abbreviation" gorm:"type:varchar(100)"`
+	IsActive     bool   `json:"IsActive" gorm:"type:bool;default:true"`
+	Accounts     []account.Account
+	BankPassbook bank_passbook.BankPassbook
+	Offers       []offer.Offer
+}

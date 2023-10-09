@@ -58,7 +58,7 @@ func (offerService *OfferService) GetAllOffers(allOffers *[]offer.Offer, bankIdT
 		return err
 	}
 
-	*totalCount = len(*allOffers)
+	// *totalCount = len(*allOffers)
 	uow.Commit()
 	return nil
 }
