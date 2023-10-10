@@ -50,7 +50,7 @@ func (customerService *CustomerService) CreateCustomer(newCustomer *customer.Cus
 	return nil
 }
 
-func (customerService *CustomerService) GetAllCustomers(allCustomers *[]customer.CustomerDTO, totalCount *int, limit, offset int, givenAssociations []string, columnNames, conditions, operators, values []string) error {
+func (customerService *CustomerService) GetAllCustomers(allCustomers *[]customer.CustomerDTO, totalCount *int, limit, offset int, givenAssociations []string, searchQueries map[string]interface{}) error {
 	uow := repository.NewUnitOfWork(customerService.db, true)
 
 	defer uow.RollBack()
@@ -58,13 +58,13 @@ func (customerService *CustomerService) GetAllCustomers(allCustomers *[]customer
 	requiredAssociations := repository.FilterPreloading(customerService.associations, givenAssociations)
 
 	// fmt.Println(requiredAssociations)
-	valuesRough := make([]interface{}, 0)
-	valuesRough = append(valuesRough, values)
+	// valuesRough := make([]interface{}, 0)
+	// valuesRough = append(valuesRough, values)
 	err := customerService.repository.GetAll(uow, allCustomers,
 		repository.Table("customers"),
 		repository.Paginate(limit, offset, totalCount),
 		repository.Preload(requiredAssociations),
-		repository.FilterWithOperator(columnNames, conditions, operators, valuesRough),
+		repository.SearchFilter(searchQueries),
 	)
 
 	if err != nil {

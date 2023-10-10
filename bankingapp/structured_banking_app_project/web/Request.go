@@ -169,6 +169,67 @@ func ParseForLike(request *http.Request) (columnNames []string, conditions []str
 	return
 }
 
+func ParseQueryParams(request *http.Request) (map[string]interface{}, error) {
+	queryParams := strings.Split(request.URL.Query().Encode(), "&")
+
+	queryParamsMap := make(map[string]interface{}, 0)
+	for _, query := range queryParams {
+		pair := strings.Split(query, "=")
+		key := pair[0]
+		var value string
+		if len(pair) == 1 {
+			value = ""
+		} else {
+			value = pair[1]
+		}
+		// queryParamsMap[key] = value
+
+		// if key == "limit" {
+		// 	limit, err := parseLimit(value)
+		// 	if err != nil {
+		// 		return nil, err
+		// 	}
+		// 	queryParamsMap["limit"] = limit
+		// }
+		// if key == "offset" {
+		// 	offset, err := parseOffset(value)
+		// 	if err != nil {
+		// 		return nil, err
+		// 	}
+		// 	queryParamsMap["offset"] = offset
+		// }
+		// if key == "start-date" {
+		// 	start_date, err := parseStartDate(value, "2006-01-02")
+		// 	if err != nil {
+		// 		return nil, err
+		// 	}
+		// 	queryParamsMap["start-date"] = start_date
+		// }
+		// if key == "end-date" {
+		// 	end_date, err := parseStartDate(value, "2006-01-02")
+		// 	if err != nil {
+		// 		return nil, err
+		// 	}
+		// 	queryParamsMap["end-date"] = end_date
+		// }
+		// if key == "includes" {
+		// 	preloads := ParsePreloading(request)
+		// 	queryParamsMap["includes"] = preloads
+		// }
+		if key != "limit" &&
+			key != "offset" &&
+			key != "start-date" &&
+			key != "end-date" &&
+			key != "includes" && value != "" {
+			queryParamsMap[key] = value
+		}
+		fmt.Println(queryParamsMap)
+
+	}
+	return queryParamsMap, nil
+
+}
+
 // func ParseStartDateEndDate(r *http.Request) (startDateTimeDotTime, endDateTimeDotTime time.Time) {
 
 // 	format := "2006-01-02"

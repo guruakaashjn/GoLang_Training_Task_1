@@ -63,9 +63,38 @@ func (controller *CustomerController) GetAllCustomers(w http.ResponseWriter, r *
 	}
 	givenAssociations := web.ParsePreloading(r)
 
-	columnNames, conditiond, operators, values := web.ParseForLike(r)
+	// columnNames, conditiond, operators, values := web.ParseForLike(r)
 
-	err = controller.service.GetAllCustomers(allCustomers, &totalCount, limit, offset, givenAssociations, columnNames, conditiond, operators, values)
+	allQueries, err := web.ParseQueryParams(r)
+	if err != nil {
+		controller.log.PrintError(err)
+		web.RespondError(w, errors.NewHTTPError(err.Error(), http.StatusBadRequest))
+		return
+	}
+	// var limit int
+	// var offset int
+	// var givenAssociations = make([]string, 0)
+	// searchQueries := make(map[string]interface{}, 0)
+	// for queryKey, queryValue := range allQueries {
+	// 	if queryKey == "limit" {
+	// 		limit = queryValue.(int)
+	// 	}
+	// 	if queryKey == "offset" {
+	// 		offset = queryValue.(int)
+	// 	}
+	// 	if queryKey == "includes" {
+	// 		givenAssociations = queryValue.([]string)
+	// 	}
+	// 	if queryKey != "limit" && queryKey != "offset" && queryKey != "includes" {
+	// 		searchQueries[queryKey] = queryValue
+	// 	}
+	// }
+
+	// println("--------------------------------------------------------------------", strings.Split(columnName.Encode(), "&")[0])
+
+	// println("--------------------------------------------------------------------", strings.Split(columnName.Encode(), "=")[0])
+
+	err = controller.service.GetAllCustomers(allCustomers, &totalCount, limit, offset, givenAssociations, allQueries)
 	if err != nil {
 		// controller.log.Print(err.Error())
 		controller.log.PrintError(err)

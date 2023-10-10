@@ -204,6 +204,14 @@ func Limit(limit interface{}) QueryProcessor {
 	}
 }
 
+func SearchFilter(searchParams map[string]interface{}) QueryProcessor {
+	return func(db *gorm.DB, out interface{}) (*gorm.DB, error) {
+		for field, value := range searchParams {
+			db = db.Debug().Where("`"+field+"`"+"LIKE ?", "%"+value.(string)+"%")
+		}
+		return db, nil
+	}
+}
 func FilterWithOperator(columnNames []string, conditions []string, operators []string, values []interface{}) QueryProcessor {
 	return func(db *gorm.DB, out interface{}) (*gorm.DB, error) {
 
@@ -265,6 +273,7 @@ func Preload(preloads interface{}) QueryProcessor {
 
 		for _, preload := range preloads.([]string) {
 			// fmt.Println(preload)
+
 			db = db.Preload(preload)
 		}
 

@@ -175,6 +175,9 @@ func (accountService *AccountService) TransferMoney(senderAccount, receiverAccou
 	if err != nil {
 		return custom_errors.NewValidationError("receiver account is deleted or does not exist")
 	}
+	if amount <= 0 {
+		return custom_errors.NewValidationError("amount is negative or zero")
+	}
 
 	uow := repository.NewUnitOfWork(accountService.db, false)
 	defer uow.RollBack()
@@ -311,7 +314,9 @@ func (accountService *AccountService) DepositMoney(senderAccount *account.Accoun
 	if err != nil {
 		return custom_errors.NewValidationError("sender account is deleted or does not exist")
 	}
-
+	if amount <= 0 {
+		return custom_errors.NewValidationError("amount is negative or zero")
+	}
 	uow := repository.NewUnitOfWork(accountService.db, false)
 	defer uow.RollBack()
 
@@ -352,6 +357,9 @@ func (accountService *AccountService) WithdrawMoney(senderAccount *account.Accou
 	err := accountService.doesAccountExist(senderAccount.ID)
 	if err != nil {
 		return custom_errors.NewValidationError("sender account is deleted or does not exist")
+	}
+	if amount <= 0 {
+		return custom_errors.NewValidationError("amount is negative or zero")
 	}
 
 	uow := repository.NewUnitOfWork(accountService.db, false)

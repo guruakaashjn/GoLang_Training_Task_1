@@ -19,5 +19,5 @@ func (l *Log) Print(value ...interface{}) {
 }
 
 func (l *Log) PrintError(er error) {
-	fmt.Println("ERROR : ", er, " at : ", time.Now())
+	fmt.Println("ERROR : ", er.Error(), " at : ", time.Now())
 }
