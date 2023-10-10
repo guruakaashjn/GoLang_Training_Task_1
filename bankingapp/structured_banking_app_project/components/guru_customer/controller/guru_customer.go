@@ -3,7 +3,6 @@ package controller
 import (
 	"bankingapp/errors"
 	"bankingapp/models/customer"
-	"bankingapp/utils"
 	"bankingapp/web"
 	"fmt"
 	"net/http"
@@ -53,7 +52,7 @@ func (controller *CustomerController) RegisterCustomer(w http.ResponseWriter, r 
 }
 
 func (controller *CustomerController) GetAllCustomers(w http.ResponseWriter, r *http.Request) {
-	allCustomers := &[]customer.Customer{}
+	allCustomers := &[]customer.CustomerDTO{}
 	var totalCount int
 	limit, offset, err := web.ParseLimitAndOffset(r)
 	if err != nil {
@@ -73,13 +72,13 @@ func (controller *CustomerController) GetAllCustomers(w http.ResponseWriter, r *
 		web.RespondError(w, err)
 		return
 	}
-	allCustomersDTO := []customer.CustomerDTO{}
-	for _, customerObj := range *allCustomers {
-		customerDTOObj := customer.CustomerDTO{}
-		utils.ConvertUserObjectToDTOObject(&customerObj, &customerDTOObj)
-		allCustomersDTO = append(allCustomersDTO, customerDTOObj)
-	}
-	web.RespondJSONWithXTotalCount(w, http.StatusOK, totalCount, allCustomersDTO)
+	// allCustomersDTO := []customer.CustomerDTO{}
+	// for _, customerObj := range *allCustomers {
+	// 	customerDTOObj := customer.CustomerDTO{}
+	// 	utils.ConvertUserObjectToDTOObject(&customerObj, &customerDTOObj)
+	// 	allCustomersDTO = append(allCustomersDTO, customerDTOObj)
+	// }
+	web.RespondJSONWithXTotalCount(w, http.StatusOK, totalCount, allCustomers)
 }
 
 func (controller *CustomerController) GetCustomerById(w http.ResponseWriter, r *http.Request) {

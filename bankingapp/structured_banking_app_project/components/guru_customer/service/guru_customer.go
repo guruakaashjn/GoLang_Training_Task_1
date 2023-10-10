@@ -50,7 +50,7 @@ func (customerService *CustomerService) CreateCustomer(newCustomer *customer.Cus
 	return nil
 }
 
-func (customerService *CustomerService) GetAllCustomers(allCustomers *[]customer.Customer, totalCount *int, limit, offset int, givenAssociations []string, columnNames, conditions, operators, values []string) error {
+func (customerService *CustomerService) GetAllCustomers(allCustomers *[]customer.CustomerDTO, totalCount *int, limit, offset int, givenAssociations []string, columnNames, conditions, operators, values []string) error {
 	uow := repository.NewUnitOfWork(customerService.db, true)
 
 	defer uow.RollBack()
